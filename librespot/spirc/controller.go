@@ -3,13 +3,15 @@ package spirc
 import (
 	"errors"
 	"fmt"
-	"github.com/golang/protobuf/proto"
-	"github.com/librespot-org/librespot-golang/Spotify"
-	"github.com/librespot-org/librespot-golang/librespot/core"
-	"github.com/librespot-org/librespot-golang/librespot/mercury"
-	"github.com/librespot-org/librespot-golang/librespot/utils"
 	"strings"
 	"sync"
+
+	"github.com/golang/protobuf/proto"
+
+	"github.com/arcspace/go-librespot/Spotify"
+	"github.com/arcspace/go-librespot/librespot/core"
+	"github.com/arcspace/go-librespot/librespot/mercury"
+	"github.com/arcspace/go-librespot/librespot/utils"
 )
 
 // Controller is a structure for Spotify Connect remote control interface.
@@ -72,7 +74,7 @@ func (c *Controller) LoadTrack(ident string, gids []string) error {
 
 	frame := &Spotify.Frame{
 		Version:         proto.Uint32(1),
-		Ident:           proto.String(c.session.DeviceId()),
+		Ident:           proto.String(c.session.Ctx().DeviceUID),
 		ProtocolVersion: proto.String("2.0.0"),
 		SeqNr:           proto.Uint32(c.seqNr),
 		Typ:             Spotify.MessageType_kMessageTypeLoad.Enum(),
@@ -104,7 +106,7 @@ func (c *Controller) SendVolume(recipient string, volume int) error {
 	messageType := Spotify.MessageType_kMessageTypeVolume
 	frame := &Spotify.Frame{
 		Version:         proto.Uint32(1),
-		Ident:           proto.String(c.session.DeviceId()),
+		Ident:           proto.String(c.session.Ctx().DeviceUID),
 		ProtocolVersion: proto.String("2.0.0"),
 		SeqNr:           proto.Uint32(c.seqNr),
 		Typ:             &messageType,
@@ -157,17 +159,18 @@ func (c *Controller) ListDevices() []ConnectDevice {
 func (c *Controller) sendFrame(frame *Spotify.Frame) error {
 	frameData, err := proto.Marshal(frame)
 	if err != nil {
-		return fmt.Errorf("could not Marshal spirc Request frame: ", err)
+		return fmt.Errorf("could not Marshal spirc Request frame: %v", err)
 	}
 
 	payload := make([][]byte, 1)
 	payload[0] = frameData
 
 	status := make(chan int32)
-
+	
+	// TODO: yikes, refactor me with channels
 	go c.session.Mercury().Request(mercury.Request{
 		Method:  "SEND",
-		Uri:     "hm://remote/user/" + c.session.Username() + "/",
+		Uri:     "hm://remote/user/" + c.session.Ctx().Info.Username + "/",
 		Payload: payload,
 	}, func(res mercury.Response) {
 		status <- res.StatusCode
@@ -185,7 +188,7 @@ func (c *Controller) sendCmd(recipient []string, messageType Spotify.MessageType
 	c.seqNr += 1
 	frame := &Spotify.Frame{
 		Version:         proto.Uint32(1),
-		Ident:           proto.String(c.session.DeviceId()),
+		Ident:           proto.String(c.session.Ctx().DeviceUID),
 		ProtocolVersion: proto.String("2.0.0"),
 		SeqNr:           proto.Uint32(c.seqNr),
 		Typ:             &messageType,
@@ -197,20 +200,22 @@ func (c *Controller) sendCmd(recipient []string, messageType Spotify.MessageType
 
 func (c *Controller) subscribe() {
 	ch := make(chan mercury.Response)
-	c.session.Mercury().Subscribe(fmt.Sprintf("hm://remote/user/%s/", c.session.Username()), ch, func(_ mercury.Response) {
-		go c.run(ch)
+	c.session.Mercury().Subscribe(fmt.Sprintf("hm://remote/user/%s/", c.session.Ctx().Info.Username), ch, func(_ mercury.Response) {
+		go c.run(ch, nil)
 		go c.SendHello()
 	})
 }
 
-func (c *Controller) run(ch chan mercury.Response) {
+func (c *Controller) run(ch chan mercury.Response, errs chan error) {
 	for {
 		response := <-ch
 
 		frame := &Spotify.Frame{}
 		err := proto.Unmarshal(response.Payload[0], frame)
 		if err != nil {
-			fmt.Println("error getting packet")
+			if errs != nil {
+				errs <- err
+			}
 			continue
 		}
 
@@ -229,24 +234,12 @@ func (c *Controller) run(ch chan mercury.Response) {
 			c.devicesLock.Unlock()
 		}
 
+		// Respond to updates
 		if c.updateChan != nil {
 			select {
 			case c.updateChan <- *frame:
-				fmt.Println("sent update")
 			default:
-				fmt.Println("dropped update")
 			}
 		}
-
-		fmt.Printf("%v %v %v %v %v %v \n",
-			frame.Typ,
-			frame.DeviceState.GetName(),
-			*frame.Ident,
-			*frame.SeqNr,
-			frame.GetStateUpdateId(),
-			frame.Recipient,
-		)
-
 	}
-
 }

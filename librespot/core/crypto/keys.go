@@ -9,19 +9,31 @@ import (
 	"math/big"
 )
 
-type PrivateKeys struct {
-	privateKey *big.Int
-	publicKey  *big.Int
+type Keys interface {
+	PubKey() []byte
+	PrivateKey() *big.Int
 
+	Prime() *big.Int
+
+	ClientNonce() []byte
+
+	SharedKey(publicKey string) []byte
+
+	AddRemoteKey(remote []byte, clientPacket []byte, serverPacket []byte) SharedKeys
+}
+
+type rsaKeys struct {
+	privateKey  *big.Int
+	publicKey   *big.Int
 	generator   *big.Int
 	prime       *big.Int
 	clientNonce []byte
 }
 
 type SharedKeys struct {
-	challenge []byte
-	sendKey   []byte
-	recvKey   []byte
+	Challenge []byte
+	SendKey   []byte
+	RecvKey   []byte
 }
 
 func RandomVec(count int) []byte {
@@ -54,7 +66,7 @@ func Powm(base, exp, modulus *big.Int) *big.Int {
 	return result
 }
 
-func GenerateKeys() PrivateKeys {
+func GenerateKeys() Keys {
 	private := new(big.Int)
 	private.SetBytes(RandomVec(95))
 	nonce := RandomVec(0x10)
@@ -62,7 +74,7 @@ func GenerateKeys() PrivateKeys {
 	return GenerateKeysFromPrivate(private, nonce)
 }
 
-func GenerateKeysFromPrivate(private *big.Int, nonce []byte) PrivateKeys {
+func GenerateKeysFromPrivate(private *big.Int, nonce []byte) *rsaKeys {
 	DH_GENERATOR := big.NewInt(0x2)
 	DH_PRIME := new(big.Int)
 	DH_PRIME.SetBytes([]byte{0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xc9,
@@ -77,7 +89,7 @@ func GenerateKeysFromPrivate(private *big.Int, nonce []byte) PrivateKeys {
 		0x4c, 0x42, 0xe9, 0xa6, 0x3a, 0x36, 0x20, 0xff, 0xff,
 		0xff, 0xff, 0xff, 0xff, 0xff, 0xff})
 
-	return PrivateKeys{
+	return &rsaKeys{
 		privateKey: private,
 		publicKey:  Powm(DH_GENERATOR, private, DH_PRIME),
 
@@ -87,7 +99,7 @@ func GenerateKeysFromPrivate(private *big.Int, nonce []byte) PrivateKeys {
 	}
 }
 
-func (p *PrivateKeys) AddRemoteKey(remote []byte, clientPacket []byte, serverPacket []byte) SharedKeys {
+func (p *rsaKeys) AddRemoteKey(remote []byte, clientPacket []byte, serverPacket []byte) SharedKeys {
 	remote_be := new(big.Int)
 	remote_be.SetBytes(remote)
 	shared_key := Powm(remote_be, p.privateKey, p.prime)
@@ -108,13 +120,13 @@ func (p *PrivateKeys) AddRemoteKey(remote []byte, clientPacket []byte, serverPac
 	mac.Write(serverPacket)
 
 	return SharedKeys{
-		challenge: mac.Sum(nil),
-		sendKey:   data[0x14:0x34],
-		recvKey:   data[0x34:0x54],
+		Challenge: mac.Sum(nil),
+		SendKey:   data[0x14:0x34],
+		RecvKey:   data[0x34:0x54],
 	}
 }
 
-func (p *PrivateKeys) SharedKey(publicKey string) []byte {
+func (p *rsaKeys) SharedKey(publicKey string) []byte {
 	publicKeyBytes, _ := base64.StdEncoding.DecodeString(publicKey)
 
 	publicBig := new(big.Int)
@@ -124,22 +136,18 @@ func (p *PrivateKeys) SharedKey(publicKey string) []byte {
 	return sharedKey.Bytes()
 }
 
-func (p *PrivateKeys) PubKey() []byte {
+func (p *rsaKeys) PubKey() []byte {
 	return p.publicKey.Bytes()
 }
 
-func (p *PrivateKeys) PrivateKey() *big.Int {
+func (p *rsaKeys) PrivateKey() *big.Int {
 	return p.privateKey
 }
 
-func (p *PrivateKeys) Prime() *big.Int {
+func (p *rsaKeys) Prime() *big.Int {
 	return p.prime
 }
 
-func (p *PrivateKeys) ClientNonce() []byte {
+func (p *rsaKeys) ClientNonce() []byte {
 	return p.clientNonce
-}
-
-func (s *SharedKeys) Challenge() []byte {
-	return s.challenge
 }

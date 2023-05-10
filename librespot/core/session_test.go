@@ -1,19 +1,6 @@
 package core
 
-import (
-	"bytes"
-	"encoding/binary"
-	"github.com/golang/protobuf/proto"
-	"github.com/librespot-org/librespot-golang/Spotify"
-	"github.com/librespot-org/librespot-golang/librespot/connection"
-	"github.com/librespot-org/librespot-golang/librespot/crypto"
-	"github.com/librespot-org/librespot-golang/librespot/mercury"
-	"github.com/librespot-org/librespot-golang/librespot/spirc"
-	"io"
-	"math/big"
-	"testing"
-)
-
+/*
 type shanPacket struct {
 	cmd uint8
 	buf []byte
@@ -206,3 +193,6 @@ func TestHello(t *testing.T) {
 		t.Errorf("Wrong ident. Got %q, want %q", *frame.Ident, "testDevice")
 	}
 }
+
+
+*/

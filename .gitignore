@@ -1,4 +1,4 @@
-librespot-golang
+go-librespot
 **.DS_Store
 vendor/
 .idea/

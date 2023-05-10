@@ -13,6 +13,15 @@ type PlainConnection struct {
 	mutex  *sync.Mutex
 }
 
+// NewPlainConnection creates a new PlainConnection object.
+func NewPlainConnection(reader io.Reader, writer io.Writer) PlainConnection {
+	return PlainConnection{
+		Reader: reader,
+		Writer: writer,
+		mutex:  &sync.Mutex{},
+	}
+}
+
 func makePacketPrefix(prefix []byte, data []byte) []byte {
 	size := len(prefix) + 4 + len(data)
 	buf := make([]byte, 0, size)
@@ -23,35 +32,28 @@ func makePacketPrefix(prefix []byte, data []byte) []byte {
 	return append(buf, data...)
 }
 
-func MakePlainConnection(reader io.Reader, writer io.Writer) PlainConnection {
-	return PlainConnection{
-		Reader: reader,
-		Writer: writer,
-		mutex:  &sync.Mutex{},
-	}
-}
-
-func (p *PlainConnection) SendPrefixPacket(prefix []byte, data []byte) (packet []byte, err error) {
-	packet = makePacketPrefix(prefix, data)
-
+func (p *PlainConnection) SendPrefixPacket(prefix []byte, data []byte) ([]byte, error) {
+	packet := makePacketPrefix(prefix, data)
 	p.mutex.Lock()
-	_, err = p.Writer.Write(packet)
+	_, err := p.Writer.Write(packet)
 	p.mutex.Unlock()
-
-	return
+	if err != nil {
+		return nil, err
+	}
+	return packet, err
 }
 
-func (p *PlainConnection) RecvPacket() (buf []byte, err error) {
+func (p *PlainConnection) RecvPacket() ([]byte, error) {
 	var size uint32
-	err = binary.Read(p.Reader, binary.BigEndian, &size)
+	err := binary.Read(p.Reader, binary.BigEndian, &size)
 	if err != nil {
-		return
+		return nil, err
 	}
-	buf = make([]byte, size)
+	buf := make([]byte, size)
 	binary.BigEndian.PutUint32(buf, size)
 	_, err = io.ReadFull(p.Reader, buf[4:])
 	if err != nil {
-		return
+		return nil, err
 	}
 	return buf, nil
 }

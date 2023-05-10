@@ -75,7 +75,7 @@ func rotl(w uint32, x int) uint32 {
 }
 
 func byte2word(b []byte) uint32 {
-	return (uint32(b[3])&0xFF)<<24 | (uint32(b[2])&0xFF)<<16 | (uint32(b[1])&0xFF)<<8 | (uint32(b[0]) & 0xFF)
+	return uint32(b[3])<<24 | uint32(b[2])<<16 | uint32(b[1])<<8 | uint32(b[0])
 }
 
 func word2byte(w uint32, b []byte) {
@@ -83,13 +83,6 @@ func word2byte(w uint32, b []byte) {
 	b[2] = byte(toByte(w, 2))
 	b[1] = byte(toByte(w, 1))
 	b[0] = byte(toByte(w, 0))
-}
-
-func xorword(w uint32, b []byte) {
-	b[3] ^= byte(toByte(w, 3))
-	b[2] ^= byte(toByte(w, 2))
-	b[1] ^= byte(toByte(w, 1))
-	b[0] ^= byte(toByte(w, 0))
 }
 
 /* Nonlinear transform (sbox) of a word.
@@ -287,94 +280,6 @@ func shn_nonce(c *shn_ctx, nonce []byte, noncelen int) {
 	shn_loadkey(c, nonce, noncelen)
 	shn_genkonst(c)
 	c.nbuf = 0
-}
-
-/* XOR pseudo-random bytes into buffer
- * Note: doesn't play well with MAC functions.
- */
-func shn_stream(c *shn_ctx, buf []byte, nbytes int) {
-	var endbuf []byte
-
-	/* Handle any previously buffered bytes */
-	for c.nbuf != 0 && nbytes != 0 {
-		buf[0] ^= byte(c.sbuf & 0xFF)
-		buf = buf[1:]
-		c.sbuf >>= 8
-		c.nbuf -= 8
-		nbytes--
-	}
-
-	/* Handle whole words */
-	endbuf = buf[uint32(nbytes)&^(uint32(0x03)):]
-
-	for -cap(buf) < -cap(endbuf) {
-		cycle(c)
-		xorword(c.sbuf, buf)
-		buf = buf[4:]
-	}
-
-	/* Handle any trailing bytes */
-	nbytes &= 0x03
-
-	if nbytes != 0 {
-		cycle(c)
-		c.nbuf = 32
-		for c.nbuf != 0 && nbytes != 0 {
-			buf[0] ^= byte(c.sbuf & 0xFF)
-			buf = buf[1:]
-			c.sbuf >>= 8
-			c.nbuf -= 8
-			nbytes--
-		}
-	}
-}
-
-/* accumulate words into MAC without encryption
- * Note that plaintext is accumulated for MAC.
- */
-func shn_maconly(c *shn_ctx, buf []byte, nbytes int) {
-	var endbuf []byte
-
-	/* Handle any previously buffered bytes */
-	if c.nbuf != 0 {
-		for c.nbuf != 0 && nbytes != 0 {
-			c.mbuf ^= uint32(buf[0]) << uint(32-c.nbuf)
-			buf = buf[1:]
-			c.nbuf -= 8
-			nbytes--
-		}
-
-		if c.nbuf != 0 { /* not a whole word yet */
-			return
-		}
-
-		/* LFSR already cycled */
-		macfunc(c, c.mbuf)
-	}
-
-	/* Handle whole words */
-	endbuf = buf[uint32(nbytes)&^(uint32(0x03)):]
-
-	for -cap(buf) < -cap(endbuf) {
-		cycle(c)
-		macfunc(c, byte2word(buf))
-		buf = buf[4:]
-	}
-
-	/* Handle any trailing bytes */
-	nbytes &= 0x03
-
-	if nbytes != 0 {
-		cycle(c)
-		c.mbuf = 0
-		c.nbuf = 32
-		for c.nbuf != 0 && nbytes != 0 {
-			c.mbuf ^= uint32(buf[0]) << uint(32-c.nbuf)
-			buf = buf[1:]
-			c.nbuf -= 8
-			nbytes--
-		}
-	}
 }
 
 /* Combined MAC and encryption.

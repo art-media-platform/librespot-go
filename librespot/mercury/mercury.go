@@ -4,15 +4,17 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	"github.com/golang/protobuf/proto"
-	"github.com/librespot-org/librespot-golang/Spotify"
-	"github.com/librespot-org/librespot-golang/librespot/connection"
 	"io"
 	"sync"
+
+	"github.com/golang/protobuf/proto"
+
+	"github.com/arcspace/go-librespot/Spotify"
+	"github.com/arcspace/go-librespot/librespot/core/connection"
 )
 
-// Mercury is the protocol implementation for Spotify Connect playback control and metadata fetching.It works as a
-// PUB/SUB system, where you, as an audio sink, subscribes to the events of a specified user (playlist changes) but
+// Mercury is the protocol implementation for Spotify Connect playback control and metadata fetching. It works as a
+// PUB/SUB system, where you, as an audio sink, subscribe to the events of a specified user (playlist changes) but
 // also access various metadata normally fetched by external players (tracks metadata, playlists, artists, etc).
 
 type Response struct {
@@ -47,7 +49,7 @@ type Internal struct {
 type Client struct {
 	subscriptions map[string][]chan Response
 	callbacks     map[string]Callback
-	internal      *Internal
+	internal      Internal
 	cbMu          sync.Mutex
 }
 
@@ -62,7 +64,7 @@ func CreateMercury(stream connection.PacketStream) *Client {
 	client := &Client{
 		callbacks:     make(map[string]Callback),
 		subscriptions: make(map[string][]chan Response),
-		internal: &Internal{
+		internal: Internal{
 			pending: make(map[string]Pending),
 			stream:  stream,
 		},
@@ -101,7 +103,7 @@ func (m *Client) addChannelSubscriber(uri string, recv chan Response) {
 	m.subscriptions[uri] = chList
 }
 
-func (m *Client) Request(req Request, cb Callback) (err error) {
+func (m *Client) Request(req Request, cb Callback) error {
 	seq, err := m.internal.request(req)
 	if err != nil {
 		// Call the callback with a 500 error-code so that the request doesn't remain pending in case of error
@@ -110,7 +112,6 @@ func (m *Client) Request(req Request, cb Callback) (err error) {
 				StatusCode: 500,
 			})
 		}
-
 		return err
 	}
 
@@ -204,7 +205,7 @@ func encodeRequest(seq []byte, req Request) ([]byte, error) {
 		header.ContentType = proto.String(req.ContentType)
 	}
 
-	headerData, err := proto.Marshal(header)
+	headerData, _ := proto.Marshal(header)
 	err = binary.Write(buf, binary.BigEndian, uint16(len(headerData)))
 	if err != nil {
 		return nil, err
@@ -228,37 +229,34 @@ func encodeRequest(seq []byte, req Request) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func handleHead(reader io.Reader) (seq []byte, flags uint8, count uint16, err error) {
+func handleHead(reader io.Reader) ([]byte, uint8, uint16, error){
 	var seqLength uint16
-	err = binary.Read(reader, binary.BigEndian, &seqLength)
+	err := binary.Read(reader, binary.BigEndian, &seqLength)
 	if err != nil {
-		return
+		return nil, 0, 0, fmt.Errorf("could not binary read seqLength: %+v", err)
 	}
-	seq = make([]byte, seqLength)
+	seq := make([]byte, seqLength)
 	_, err = io.ReadFull(reader, seq)
 	if err != nil {
-		fmt.Println("read seq")
-		return
+		return nil, 0, 0, fmt.Errorf("could not read sequence: %+v", err)
 	}
-
+	var flags uint8
 	err = binary.Read(reader, binary.BigEndian, &flags)
 	if err != nil {
-		fmt.Println("read flags")
-		return
+		return nil, 0, 0, fmt.Errorf("could not read flags: %+v", err)
 	}
+	var count uint16
 	err = binary.Read(reader, binary.BigEndian, &count)
 	if err != nil {
-		fmt.Println("read count")
-		return
+		return nil, 0, 0, fmt.Errorf("could not read count: %+v", err)
 	}
-
-	return
+	return seq, flags, count, err
 }
 
-func (m *Client) Handle(cmd uint8, reader io.Reader) (err error) {
+func (m *Client) Handle(cmd uint8, reader io.Reader) error {
 	response, err := m.internal.parseResponse(cmd, reader)
 	if err != nil {
-		return
+		return fmt.Errorf("could not parseResponse: %+v", err)
 	}
 	if response != nil {
 		if cmd == 0xb5 {
@@ -278,15 +276,13 @@ func (m *Client) Handle(cmd uint8, reader io.Reader) (err error) {
 			}
 		}
 	}
-	return
-
+	return nil
 }
 
-func (m *Internal) parseResponse(cmd uint8, reader io.Reader) (response *Response, err error) {
+func (m *Internal) parseResponse(cmd uint8, reader io.Reader) (*Response, error) {
 	seq, flags, count, err := handleHead(reader)
 	if err != nil {
-		fmt.Println("error handling response", err)
-		return
+		return nil, fmt.Errorf("could not handle response: %+v", err)
 	}
 
 	seqKey := string(seq)
@@ -294,15 +290,12 @@ func (m *Internal) parseResponse(cmd uint8, reader io.Reader) (response *Respons
 
 	if !ok && cmd == 0xb5 {
 		pending = Pending{}
-	} else if !ok {
-		//log.Print("ignoring seq ", SeqKey)
 	}
 
 	for i := uint16(0); i < count; i++ {
 		part, err := parsePart(reader)
 		if err != nil {
-			fmt.Println("read part")
-			return nil, err
+			return nil, fmt.Errorf("could not read part: %+v", err)
 		}
 
 		if pending.partial != nil {

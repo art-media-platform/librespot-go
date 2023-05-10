@@ -1,4 +1,4 @@
-package player
+package asset
 
 import (
 	"bytes"
@@ -21,12 +21,12 @@ func buildAudioChunkRequest(channel uint16, fileId []byte, start uint32, end uin
 	return buf.Bytes()
 }
 
-func buildKeyRequest(seq []byte, trackId []byte, fileId []byte) []byte {
+func buildKeyRequest(seq uint32, trackId []byte, fileId []byte) []byte {
 	buf := new(bytes.Buffer)
 
 	buf.Write(fileId)
 	buf.Write(trackId)
-	buf.Write(seq)
+	binary.Write(buf, binary.BigEndian, seq)
 	binary.Write(buf, binary.BigEndian, uint16(0x0000))
 
 	return buf.Bytes()

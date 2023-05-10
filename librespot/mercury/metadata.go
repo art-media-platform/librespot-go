@@ -1,4 +1,4 @@
-package metadata
+package mercury
 
 import (
 	"encoding/json"
@@ -32,7 +32,7 @@ type Playlist struct {
 	Uri            string `json:"uri"`
 	Image          string `json:"image"`
 	FollowersCount int    `json:"followersCount"`
-	Author         string `json:"authora"`
+	Author         string `json:"author"`
 }
 
 type Profile struct {

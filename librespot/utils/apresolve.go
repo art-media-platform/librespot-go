@@ -3,6 +3,7 @@ package utils
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"math/rand"
 	"net/http"
@@ -19,7 +20,7 @@ type APList struct {
 func APResolve() (string, error) {
 	r, err := http.Get(kAPEndpoint)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to resolve APEndpoint: %v", err) 
 	}
 	defer r.Body.Close()
 

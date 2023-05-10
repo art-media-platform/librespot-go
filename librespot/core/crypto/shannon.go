@@ -3,10 +3,11 @@ package crypto
 import (
 	"bytes"
 	"encoding/binary"
-	"github.com/librespot-org/librespot-golang/librespot/connection"
+	"errors"
 	"io"
-	"log"
 	"sync"
+
+	"github.com/arcspace/go-librespot/librespot/core/connection"
 )
 
 type shannonStream struct {
@@ -18,7 +19,7 @@ type shannonStream struct {
 	reader    io.Reader
 	writer    io.Writer
 
-	mutex *sync.Mutex
+	mutex sync.Mutex
 }
 
 func setKey(ctx *shn_ctx, key []uint8) {
@@ -34,11 +35,10 @@ func CreateStream(keys SharedKeys, conn connection.PlainConnection) connection.P
 	s := &shannonStream{
 		reader: conn.Reader,
 		writer: conn.Writer,
-		mutex:  &sync.Mutex{},
 	}
 
-	setKey(&s.recvCipher, keys.recvKey)
-	setKey(&s.sendCipher, keys.sendKey)
+	setKey(&s.recvCipher, keys.RecvKey)
+	setKey(&s.sendCipher, keys.SendKey)
 
 	return s
 }
@@ -88,7 +88,7 @@ func (s *shannonStream) WrapWriter(writer io.Writer) {
 
 func (s *shannonStream) Read(p []byte) (n int, err error) {
 	n, err = s.reader.Read(p)
-	p = s.Decrypt(p)
+	s.Decrypt(p)
 	return n, err
 }
 
@@ -111,7 +111,7 @@ func (s *shannonStream) FinishSend() (err error) {
 	return
 }
 
-func (s *shannonStream) finishRecv() {
+func (s *shannonStream) finishRecv() error {
 	count := 4
 
 	mac := make([]byte, count)
@@ -121,13 +121,14 @@ func (s *shannonStream) finishRecv() {
 	shn_finish(&s.recvCipher, mac2, count)
 
 	if !bytes.Equal(mac, mac2) {
-		log.Println("received mac doesn't match")
+		return errors.New("received mac doesn't match")
 	}
 
 	s.recvNonce += 1
 	nonce := make([]uint8, 4)
 	binary.BigEndian.PutUint32(nonce, s.recvNonce)
 	shn_nonce(&s.recvCipher, nonce, len(nonce))
+	return nil
 }
 
 func (s *shannonStream) RecvPacket() (cmd uint8, buf []byte, err error) {
@@ -151,7 +152,7 @@ func (s *shannonStream) RecvPacket() (cmd uint8, buf []byte, err error) {
 		buf = s.Decrypt(buf)
 
 	}
-	s.finishRecv()
+	err = s.finishRecv()
 
 	return cmd, buf, err
 }

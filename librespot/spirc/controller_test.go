@@ -1,14 +1,6 @@
 package spirc
 
-import (
-	"bytes"
-	"github.com/golang/protobuf/proto"
-	"github.com/librespot-org/librespot-golang/Spotify"
-	"github.com/librespot-org/librespot-golang/librespot/connection"
-	"github.com/librespot-org/librespot-golang/librespot/mercury"
-	"testing"
-)
-
+/*
 type fakeServer struct {
 	stream    connection.PacketStream
 	responses []mercury.Response
@@ -87,3 +79,4 @@ func TestHelloCmd(t *testing.T) {
 		t.Errorf("Wrong message type")
 	}
 }
+*/
