@@ -21,7 +21,7 @@ var BuildID = "dev"
 func (sess *Session) Login() error {
 	var packet []byte
 	login := &sess.ctx.Login
-	
+
 	if len(login.AuthData) > 0 && login.Username != "" {
 		packet = sess.makeLoginBlobPacket(
 			login.Username,
@@ -43,46 +43,13 @@ func (sess *Session) Login() error {
 	} else {
 		return errors.New("no login method provided")
 	}
-	
+
 	return sess.doLogin(packet, sess.ctx.Login.Username)
 }
 
-
-/*
-// Registers librespot as a Spotify Connect device via mdns. When user connects, logs on to Spotify and saves
-// credentials in file at cacheBlobPath. Once saved, the blob credentials allow the program to connect to other
-// Spotify Connect devices and control them.
-func (sess *Session) LoginDiscovery(cacheBlobPath string) (*Session, error) {
-	disc := discovery.LoginFromConnect(cacheBlobPath, sess.opts.DeviceID, sess.opts.DeviceName)
-	return sessionFromDiscovery(disc)
-}
-
-// Login using an authentication blob through Spotify Connect discovery system, reading an existing blob data. To read
-// from a file, see LoginDiscoveryBlobFile.
-func (sess *Session) LoginDiscoveryBlob(username string, blob string, deviceName string) (*Session, error) {
-	deviceId := utils.GenerateDeviceId(deviceName)
-	disc := discovery.CreateFromBlob(utils.BlobInfo{
-		Username:    username,
-		DecodedBlob: blob,
-	}, "", deviceId, deviceName)
-	return sessionFromDiscovery(disc)
-}
-
-// Login from credentials at cacheBlobPath previously saved by LoginDiscovery. Similar to LoginDiscoveryBlob, except
-// it reads it directly from a file.
-func (sess *Session) LoginDiscoveryBlobFile(cacheBlobPath, deviceName string) (*Session, error) {
-	deviceId := utils.GenerateDeviceId(deviceName)
-	disc := discovery.CreateFromFile(cacheBlobPath, deviceId, deviceName)
-	return sessionFromDiscovery(disc)
-}
-*/
-
-
-
-
 func (s *Session) doLogin(packet []byte, username string) error {
 	s.ctx.Info = respot.SessionInfo{}
-	
+
 	err := s.stream.SendPacket(connection.PacketLogin, packet)
 	if err != nil {
 		log.Fatal("bad shannon write", err)
@@ -98,9 +65,6 @@ func (s *Session) doLogin(packet []byte, username string) error {
 	user := welcome.GetCanonicalUsername()
 	if user == "" {
 		user = s.ctx.Login.Username
-	}
-	if user == "" {
-		user = s.discovery.LoginBlob().Username
 	}
 	s.ctx.Info.Username = user
 	s.ctx.Info.AuthBlob = welcome.GetReusableAuthCredentials()
@@ -158,13 +122,11 @@ func (s *Session) getLoginBlobPacket(blob utils.BlobInfo) ([]byte, error) {
 	return s.makeLoginBlobPacket(blob.Username, authData, &authType), nil
 }
 
-
-
 func (s *Session) makeLoginBlobPacket(
 	username string,
 	authData []byte,
 	authType *Spotify.AuthenticationType,
-) []byte{
+) []byte {
 	versionString := "librespot_" + Version + "_" + BuildID
 	packet := &Spotify.ClientResponseEncrypted{
 		LoginCredentials: &Spotify.LoginCredentials{

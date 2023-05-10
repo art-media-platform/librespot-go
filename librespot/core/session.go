@@ -16,11 +16,9 @@ import (
 	"github.com/arcspace/go-librespot/librespot/asset"
 	"github.com/arcspace/go-librespot/librespot/core/connection"
 	"github.com/arcspace/go-librespot/librespot/core/crypto"
-	"github.com/arcspace/go-librespot/librespot/discovery"
 	"github.com/arcspace/go-librespot/librespot/mercury"
 	"github.com/arcspace/go-librespot/librespot/utils"
 )
-
 
 func init() {
 	respot.StartNewSession = StartSession
@@ -30,7 +28,7 @@ func StartSession(ctx *respot.SessionCtx) (respot.Session, error) {
 	s := &Session{
 		ctx: ctx,
 	}
-	
+
 	if s.ctx.Keys == nil {
 		s.ctx.Keys = crypto.GenerateKeys()
 	}
@@ -46,25 +44,23 @@ func StartSession(ctx *respot.SessionCtx) (respot.Session, error) {
 	return s, nil
 }
 
-
 // Session represents an active Spotify connection
 type Session struct {
-	ctx              *respot.SessionCtx
-	tcpCon           io.ReadWriter           // plain I/O network connection to the server
-	stream           connection.PacketStream // encrypted connection to the Spotify server
-	mercury          *mercury.Client         // mercury client associated with this session
-	discovery        *discovery.Discovery    // discovery service used for Spotify Connect devices discovery
-	downloader       asset.Downloader        // manages downloads
-	//ReusableAuthBlob []byte                  // reusable authentication blob for Spotify Connect devices
+	ctx        *respot.SessionCtx
+	tcpCon     io.ReadWriter           // plain I/O network connection to the server
+	stream     connection.PacketStream // encrypted connection to the Spotify server
+	mercury    *mercury.Client         // mercury client associated with this session
+	//discovery  *discovery.Discovery    // discovery service used for Spotify Connect devices discovery
+	downloader asset.Downloader        // manages downloads
 }
 
 func (s *Session) Stream() connection.PacketStream {
 	return s.stream
 }
 
-func (s *Session) Discovery() *discovery.Discovery {
-	return s.discovery
-}
+// func (s *Session) Discovery() *discovery.Discovery {
+// 	return s.discovery
+// }
 
 func (s *Session) Mercury() *mercury.Client {
 	return s.mercury
@@ -78,14 +74,12 @@ func (s *Session) Ctx() *respot.SessionCtx {
 	return s.ctx
 }
 
-
-
-func (s *Session) PinTrack(trackID string, start bool) (assets.MediaAsset, error) {
+func (s *Session) PinTrack(trackID string, opts respot.PinOpts) (assets.MediaAsset, error) {
 	asset, err := s.downloader.PinTrack(trackID)
 	if err != nil {
 		return nil, err
 	}
-	if start {
+	if opts.StartInternally {
 		err = asset.OnStart(s.ctx.Context)
 	}
 	if err != nil {
@@ -93,7 +87,6 @@ func (s *Session) PinTrack(trackID string, start bool) (assets.MediaAsset, error
 	}
 	return asset, nil
 }
-
 
 func (s *Session) StartConnection() error {
 
@@ -259,7 +252,7 @@ func (s *Session) handle(cmd uint8, data []byte) error {
 		}
 
 	case cmd == connection.PacketCountryCode:
-		s.ctx.Info.Country = fmt.Sprintf("%s", data)
+		s.ctx.Info.Country = string(data)
 
 	case 0xb2 <= cmd && cmd <= 0xb6:
 		// Mercury responses
@@ -291,11 +284,9 @@ func (s *Session) handle(cmd uint8, data []byte) error {
 	return nil
 }
 
-
 func (s *Session) Search(query string, limit int) (*mercury.SearchResponse, error) {
 	return s.mercury.Search(query, limit, s.ctx.Info.Country, s.ctx.Info.Username)
 }
-
 
 func readInt(b *bytes.Buffer) uint32 {
 	c, _ := b.ReadByte()

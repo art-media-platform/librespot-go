@@ -72,7 +72,7 @@ func (dl *downloader) PinTrack(assetURI string) (assets.MediaAsset, error) {
 	if !strings.HasPrefix(assetURI, kTrackPrefix) {
 		return nil, fmt.Errorf("invalid URI: %s", assetURI)
 	}
-	
+
 	assetID := utils.Base62ToHex(assetURI[len(kTrackPrefix):])
 
 	// Get the track metadata: it holds information about which files and encodings are available
@@ -134,7 +134,6 @@ func (dl *downloader) chooseBestFile(track *Spotify.Track) *Spotify.AudioFile {
 	}
 	return nil
 }
-
 
 func (dl *downloader) loadTrackKey(asset *mediaAsset) error {
 	seqInt, _ := dl.mercury.NextSeqWithInt()

@@ -10,6 +10,8 @@ import (
 	"os"
 	"strings"
 
+	_ "github.com/arcspace/go-librespot/librespot/core" // bootstrapping
+
 	"github.com/arcspace/go-cedar/process"
 	respot "github.com/arcspace/go-librespot/librespot/api-respot"
 	"github.com/arcspace/go-librespot/librespot/core/oauth"
@@ -37,7 +39,6 @@ func mainStart() error {
 	devicename := flag.String("devicename", defaultDeviceName, "name of device")
 	flag.Parse()
 
-
 	ctx := respot.DefaultSessionCtx(*devicename)
 	ctx.Context, _ = process.Start(&process.Task{
 		Label: "main",
@@ -47,7 +48,7 @@ func mainStart() error {
 	if err != nil {
 		return err
 	}
-	
+
 	{
 		login := &ctx.Login
 		login.Username = *username
@@ -61,7 +62,7 @@ func mainStart() error {
 				return fmt.Errorf("unable to read auth blob from %s: %s", *blobPath, err)
 			}
 		}
-		
+
 		if login.Password == "" && login.OAuthToken == "" {
 			var err error
 			login.OAuthToken, err = oauth.LoginOAuth(os.Getenv("client_id"), os.Getenv("client_secret"), os.Getenv("redirect_uri"))
@@ -75,17 +76,15 @@ func mainStart() error {
 			return err
 		}
 	}
-	
-
 
 	// Command loop
 	reader := bufio.NewReader(os.Stdin)
 
 	printHelp()
-	
+
 	for {
 		var err error
-		
+
 		fmt.Print("> ")
 		text, _ := reader.ReadString('\n')
 		cmds := strings.Split(strings.TrimSpace(text), " ")
@@ -131,7 +130,7 @@ func mainStart() error {
 		default:
 			fmt.Println("Unknown command")
 		}
-		
+
 		if err != nil {
 			fmt.Println("Error:", err)
 		}
@@ -287,10 +286,12 @@ func funcSearch(session respot.Session, keyword string) {
 	}
 }
 
-func funcSave(session respot.Session, trackID string) error {
+func funcSave(sess respot.Session, trackID string) error {
 	fmt.Println("Loading track for play: ", trackID)
 
-	asset, err := session.PinTrack(trackID, true)
+	asset, err := sess.PinTrack(trackID, respot.PinOpts{
+		StartInternally: true,
+	})
 	if err != nil {
 		return fmt.Errorf("failed to pin track: %s", err)
 	}

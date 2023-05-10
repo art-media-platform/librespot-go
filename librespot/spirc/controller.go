@@ -1,22 +1,9 @@
 package spirc
 
-import (
-	"errors"
-	"fmt"
-	"strings"
-	"sync"
-
-	"github.com/golang/protobuf/proto"
-
-	"github.com/arcspace/go-librespot/Spotify"
-	"github.com/arcspace/go-librespot/librespot/core"
-	"github.com/arcspace/go-librespot/librespot/mercury"
-	"github.com/arcspace/go-librespot/librespot/utils"
-)
-
+/*
 // Controller is a structure for Spotify Connect remote control interface.
 type Controller struct {
-	session     *core.Session
+	session     respot.Session
 	seqNr       uint32
 	devices     map[string]ConnectDevice
 	devicesLock sync.RWMutex
@@ -37,7 +24,7 @@ type ConnectDevice struct {
 
 // CreateController creates a Spirc controller. Registers listeners for Spotify connect device
 // updates, and opens connection for sending commands
-func CreateController(userSession *core.Session, credentials []byte) *Controller {
+func CreateController(userSession respot.Session, credentials []byte) *Controller {
 	controller := &Controller{
 		devices:          make(map[string]ConnectDevice),
 		session:          userSession,
@@ -119,14 +106,14 @@ func (c *Controller) SendVolume(recipient string, volume int) error {
 
 // Connect to Spotify Connect device at address (local network path). Uses credentials from saved blob to authenticate
 // on the device automagically.
-func (c *Controller) ConnectToDevice(address string) {
-	c.session.Discovery().ConnectToDevice(address)
+func (c *Controller) ConnectToDevice(addr string) {
+	c.session.Ctx().Discovery.ConnectToDevice(addr)
 }
 
 // Lists devices on local network advertising spotify connect
 // service (_spotify-connect._tcp.).
 func (c *Controller) ListMdnsDevices() ([]ConnectDevice, error) {
-	discovery := c.session.Discovery()
+	discovery := c.session.Ctx().Discovery
 	if discovery == nil {
 		return nil, errors.New(
 			"no connectDiscovery blob, must load blob before getting mdns devices")
@@ -166,7 +153,7 @@ func (c *Controller) sendFrame(frame *Spotify.Frame) error {
 	payload[0] = frameData
 
 	status := make(chan int32)
-	
+
 	// TODO: yikes, refactor me with channels
 	go c.session.Mercury().Request(mercury.Request{
 		Method:  "SEND",
@@ -243,3 +230,5 @@ func (c *Controller) run(ch chan mercury.Response, errs chan error) {
 		}
 	}
 }
+
+*/

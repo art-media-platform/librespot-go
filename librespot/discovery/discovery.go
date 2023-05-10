@@ -1,23 +1,6 @@
 package discovery
 
-import (
-	"encoding/base64"
-	"encoding/json"
-	"fmt"
-	"log"
-	"math/rand"
-	"net"
-	"net/http"
-	"net/url"
-	"strconv"
-	"strings"
-	"sync"
-
-	"github.com/badfortrains/mdns"
-
-	"github.com/arcspace/go-librespot/librespot/core/crypto"
-	"github.com/arcspace/go-librespot/librespot/utils"
-)
+/* WIP
 
 // connectInfo stores the information about Spotify Connect connection
 type connectInfo struct {
@@ -25,8 +8,8 @@ type connectInfo struct {
 	PublicKey string `json:"publicKey"`
 }
 
-// connectDeviceMdns stores the information about Spotify Connect MDNS Request
-type connectDeviceMdns struct {
+// DeviceMdns stores the information about Spotify Connect MDNS Request
+type DeviceMdns struct {
 	Path string
 	Name string
 }
@@ -50,15 +33,15 @@ type connectGetInfo struct {
 
 // Discovery stores the information about Spotify Connect Discovery Request
 type Discovery struct {
-	keys       crypto.Keys
-	cachePath  string
+	//keys       crypto.Keys
+	//cachePath  string
 	loginBlob  utils.BlobInfo
-	deviceId   string
-	deviceName string
+	//deviceId   string
+	//deviceName string
 
 	mdnsServer  *mdns.Server
 	httpServer  *http.Server
-	devices     []connectDeviceMdns
+	devices     []respot.DeviceMdns
 	devicesLock sync.RWMutex
 }
 
@@ -148,21 +131,21 @@ func (d *Discovery) LoginBlob() utils.BlobInfo {
 }
 
 // Devices return an immutable copy of the current MDNS-discovered devices, thread-safe
-func (d *Discovery) Devices() []connectDeviceMdns {
-	res := make([]connectDeviceMdns, 0, len(d.devices))
+func (d *Discovery) Devices() []respot.DeviceMdns {
+	res := make([]respot.DeviceMdns, 0, len(d.devices))
 	return append(res, d.devices...)
 }
 
 func (d *Discovery) FindDevices() {
 	ch := make(chan *mdns.ServiceEntry, 10)
 
-	d.devices = make([]connectDeviceMdns, 0)
+	d.devices = make([]respot.DeviceMdns, 0)
 	go func() {
 		for entry := range ch {
 			cPath := findCpath(entry.InfoFields)
 			path := fmt.Sprintf("http://%v:%v%v", entry.AddrV4, entry.Port, cPath)
 			d.devicesLock.Lock()
-			d.devices = append(d.devices, connectDeviceMdns{
+			d.devices = append(d.devices, respot.DeviceMdns{
 				Path: path,
 				Name: strings.Replace(entry.Name, "._spotify-connect._tcp.local.", "", 1),
 			})
@@ -176,16 +159,16 @@ func (d *Discovery) FindDevices() {
 	}
 }
 
-func (d *Discovery) ConnectToDevice(address string) error {
-	resp, err := http.Get(address + "?action=connectGetInfo")
+func (d *Discovery) ConnectToDevice(addr string) error {
+	resp, err := http.Get(addr + "?action=connectGetInfo")
 	if err != nil {
 		return err
 	}
-	resp, err = http.Get(address + "?action=resetUsers")
+	resp, err = http.Get(addr + "?action=resetUsers")
 	if err != nil {
 		return err
 	}
-	resp, err = http.Get(address + "?action=connectGetInfo")
+	resp, err = http.Get(addr + "?action=connectGetInfo")
 	if err != nil {
 		return err
 	}
@@ -210,7 +193,7 @@ func (d *Discovery) ConnectToDevice(address string) error {
 	}
 
 	body := makeAddUserRequest(d.loginBlob.Username, blob, client64, d.deviceId, d.deviceName)
-	resp, err = http.PostForm(address, body)
+	resp, err = http.PostForm(addr, body)
 	if err != nil {
 		return err
 	}
@@ -340,3 +323,5 @@ func (d *Discovery) startDiscoverable() error {
 	d.mdnsServer = server
 	return nil
 }
+
+*/

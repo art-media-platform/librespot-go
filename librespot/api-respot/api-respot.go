@@ -15,10 +15,10 @@ func DefaultSessionCtx(deviceLabel string) *SessionCtx {
 }
 
 type SessionLogin struct {
-	Username         string
-	Password         string
-	AuthData         []byte
-	OAuthToken       string
+	Username   string
+	Password   string
+	AuthData   []byte
+	OAuthToken string
 }
 
 type SessionCtx struct {
@@ -28,13 +28,19 @@ type SessionCtx struct {
 	Keys            crypto.Keys  // If left nil, will be auto-generated
 	DeviceName      string       // Label of the device being used
 	DeviceUID       string       // if nil, auto-generated from DeviceName
-
 }
 
 type SessionInfo struct {
 	Username string //  authenticated canonical username
 	AuthBlob []byte // reusable authentication blob for Spotify Connect devices
 	Country  string // user country returned by Spotify
+}
+
+type PinOpts struct {
+
+	// If set, MediaAsset.OnStart(Ctx().Context) will be called on the returned MediaAsset.
+	// This is for convenience but not desirable when the asset is in a time-to-live cache, for example.
+	StartInternally bool
 }
 
 type Session interface {
@@ -48,8 +54,7 @@ type Session interface {
 	Mercury() *mercury.Client
 
 	// Initiates access ("pinning") with the given spotify track ID or URI
-	// For convenience, if start == true, MediaAsset.OnStart(Ctx().Context) will also be called.
-	PinTrack(trackID string, start bool) (assets.MediaAsset, error)
+	PinTrack(trackID string, opts PinOpts) (assets.MediaAsset, error)
 }
 
 // Forward declared method to create a new Spotify session

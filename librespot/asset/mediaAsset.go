@@ -37,7 +37,7 @@ const (
 	kMaxConcurrentFetches = 1
 )
 
-const kDebug = false //true
+const kDebug = false
 
 type assetChunk struct {
 	chID         uint16
@@ -531,7 +531,9 @@ func (r *assetReader) Seek(offset int64, whence int) (int64, error) {
 	}
 
 	pos := r.readPos - r.asset.dataStartOfs
-	r.asset.Context.Infof(2, "SEEK  %12d", pos)
+	if kDebug {
+		r.asset.Context.Infof(2, "SEEK  %12d", pos)
+	}
 	return pos, nil
 }
 
