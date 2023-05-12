@@ -7,7 +7,7 @@ go 1.18
 require (
 	github.com/arcspace/go-arc-sdk v0.0.0-20230512170303-7b88893310c8
 	github.com/golang/protobuf v1.5.3
-	golang.org/x/crypto v0.8.0
+	golang.org/x/crypto v0.9.0
 	google.golang.org/protobuf v1.30.0
 )
 
