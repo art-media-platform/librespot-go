@@ -10,7 +10,7 @@ import (
 
 	"github.com/golang/protobuf/proto"
 
-	"github.com/arcspace/go-arcspace/arc/assets"
+	"github.com/arcspace/go-arc-sdk/apis/arc"
 	"github.com/arcspace/go-librespot/Spotify"
 	respot "github.com/arcspace/go-librespot/librespot/api-respot"
 	"github.com/arcspace/go-librespot/librespot/asset"
@@ -74,7 +74,7 @@ func (s *Session) Ctx() *respot.SessionCtx {
 	return s.ctx
 }
 
-func (s *Session) PinTrack(trackID string, opts respot.PinOpts) (assets.MediaAsset, error) {
+func (s *Session) PinTrack(trackID string, opts respot.PinOpts) (arc.MediaAsset, error) {
 	asset, err := s.downloader.PinTrack(trackID)
 	if err != nil {
 		return nil, err

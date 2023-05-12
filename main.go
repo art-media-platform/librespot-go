@@ -12,7 +12,7 @@ import (
 
 	_ "github.com/arcspace/go-librespot/librespot/core" // bootstrapping
 
-	"github.com/arcspace/go-cedar/process"
+	"github.com/arcspace/go-arc-sdk/stdlib/process"
 	respot "github.com/arcspace/go-librespot/librespot/api-respot"
 	"github.com/arcspace/go-librespot/librespot/core/oauth"
 	"github.com/arcspace/go-librespot/librespot/utils"

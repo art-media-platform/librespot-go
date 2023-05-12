@@ -10,10 +10,9 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/arcspace/go-arcspace/arc/assets"
-
-	"github.com/arcspace/go-cedar/errors"
-	"github.com/arcspace/go-cedar/process"
+	"github.com/arcspace/go-arc-sdk/apis/arc"
+	"github.com/arcspace/go-arc-sdk/stdlib/errors"
+	"github.com/arcspace/go-arc-sdk/stdlib/process"
 	"github.com/arcspace/go-librespot/Spotify"
 	"github.com/arcspace/go-librespot/librespot/core/connection"
 	"github.com/arcspace/go-librespot/librespot/mercury"
@@ -24,7 +23,7 @@ type Downloader interface {
 	HandleCmd(cmd byte, data []byte) error
 
 	// Blocks until the asset is ready to be accessed.
-	PinTrack(uri string) (assets.MediaAsset, error)
+	PinTrack(uri string) (arc.MediaAsset, error)
 }
 
 type downloader struct {
@@ -67,7 +66,7 @@ func NewDownloader(conn connection.PacketStream, client *mercury.Client) Downloa
 
 const kTrackPrefix = "spotify:track:"
 
-func (dl *downloader) PinTrack(assetURI string) (assets.MediaAsset, error) {
+func (dl *downloader) PinTrack(assetURI string) (arc.MediaAsset, error) {
 
 	if !strings.HasPrefix(assetURI, kTrackPrefix) {
 		return nil, fmt.Errorf("invalid URI: %s", assetURI)

@@ -7,8 +7,8 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/arcspace/go-arcspace/arc/assets"
-	"github.com/arcspace/go-cedar/process"
+	"github.com/arcspace/go-arc-sdk/apis/arc"
+	"github.com/arcspace/go-arc-sdk/stdlib/process"
 	"github.com/arcspace/go-librespot/Spotify"
 	"github.com/arcspace/go-librespot/librespot/core/crypto"
 )
@@ -433,7 +433,7 @@ func min(a, b int) int {
 	return b
 }
 
-func (asset *mediaAsset) NewAssetReader() (assets.AssetReader, error) {
+func (asset *mediaAsset) NewAssetReader() (arc.AssetReader, error) {
 	reader := &assetReader{
 		asset:   asset,
 		readPos: 0,
