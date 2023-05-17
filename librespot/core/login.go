@@ -137,7 +137,7 @@ func (s *Session) makeLoginBlobPacket(
 		SystemInfo: &Spotify.SystemInfo{
 			CpuFamily:               Spotify.CpuFamily_CPU_UNKNOWN.Enum(),
 			Os:                      Spotify.Os_OS_UNKNOWN.Enum(),
-			SystemInformationString: proto.String("librespot"), // without "librespot" prefix, auth fails with err PremiumAccountRequired
+			SystemInformationString: proto.String("librespot-golang"), // inaccurate auth errors if this changes?!
 			DeviceId:                proto.String(s.ctx.DeviceUID),
 		},
 		VersionString: proto.String(versionString),
