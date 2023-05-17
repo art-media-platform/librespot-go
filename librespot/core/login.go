@@ -11,8 +11,8 @@ import (
 
 	"github.com/arcspace/go-librespot/Spotify"
 	respot "github.com/arcspace/go-librespot/librespot/api-respot"
+	"github.com/arcspace/go-librespot/librespot/api-respot/blob"
 	"github.com/arcspace/go-librespot/librespot/core/connection"
-	"github.com/arcspace/go-librespot/librespot/utils"
 )
 
 var Version = "master"
@@ -97,7 +97,7 @@ func (s *Session) handleLogin() (*Spotify.APWelcome, error) {
 	}
 }
 
-func (s *Session) getLoginBlobPacket(blob utils.BlobInfo) ([]byte, error) {
+func (s *Session) getLoginBlobPacket(blob blob.BlobInfo) ([]byte, error) {
 	data, _ := base64.StdEncoding.DecodeString(blob.DecodedBlob)
 	buffer := bytes.NewBuffer(data)
 	if _, err := buffer.ReadByte(); err != nil {
@@ -137,7 +137,7 @@ func (s *Session) makeLoginBlobPacket(
 		SystemInfo: &Spotify.SystemInfo{
 			CpuFamily:               Spotify.CpuFamily_CPU_UNKNOWN.Enum(),
 			Os:                      Spotify.Os_OS_UNKNOWN.Enum(),
-			SystemInformationString: proto.String("librespot-golang"),
+			SystemInformationString: proto.String("librespot"), // without "librespot" prefix, auth fails with err PremiumAccountRequired
 			DeviceId:                proto.String(s.ctx.DeviceUID),
 		},
 		VersionString: proto.String(versionString),

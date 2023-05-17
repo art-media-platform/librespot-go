@@ -10,12 +10,11 @@ import (
 	"os"
 	"strings"
 
-	_ "github.com/arcspace/go-librespot/librespot/core" // bootstrapping
-
 	"github.com/arcspace/go-arc-sdk/stdlib/process"
+	"github.com/arcspace/go-librespot/Spotify"
 	respot "github.com/arcspace/go-librespot/librespot/api-respot"
+	_ "github.com/arcspace/go-librespot/librespot/core" // bootstrapping
 	"github.com/arcspace/go-librespot/librespot/core/oauth"
-	"github.com/arcspace/go-librespot/librespot/utils"
 )
 
 const (
@@ -148,22 +147,22 @@ func printHelp() {
 	fmt.Println("help:                           show this help")
 }
 
-func funcTrack(session respot.Session, trackID string) {
-	fmt.Println("Loading track: ", trackID)
+func funcTrack(session respot.Session, trackURI string) {
+	fmt.Println("Loading track: ", trackURI)
 
-	track, err := session.Mercury().GetTrack(utils.Base62ToHex(trackID))
+	_, track, err := session.Mercury().GetTrack(trackURI)
 	if err != nil {
-		fmt.Println("Error loading track: ", err)
+		fmt.Printf("Error loading track %q - %v", trackURI, err)
 		return
 	}
 
 	fmt.Println("Track title: ", track.GetName())
 }
 
-func funcArtist(session respot.Session, artistID string) {
-	artist, err := session.Mercury().GetArtist(utils.Base62ToHex(artistID))
+func funcArtist(session respot.Session, artistURI string) {
+	_, artist, err := session.Mercury().GetArtist(artistURI)
 	if err != nil {
-		fmt.Println("Error loading artist:", err)
+		fmt.Printf("Error loading artist %q - %v", artistURI, err)
 		return
 	}
 
@@ -181,23 +180,23 @@ func funcArtist(session respot.Session, artistID string) {
 		for _, t := range tt.GetTrack() {
 			// To save bandwidth, only track IDs are returned. If you want
 			// the track name, you need to fetch it.
-			fmt.Printf(" => %s\n", utils.ConvertTo62(t.GetGid()))
+			fmt.Printf(" => %s\n", Spotify.ConvertTo62(t.GetGid()))
 		}
 	}
 
 	fmt.Printf("\nAlbums:\n")
 	for _, ag := range artist.GetAlbumGroup() {
 		for _, a := range ag.GetAlbum() {
-			fmt.Printf(" => %s\n", utils.ConvertTo62(a.GetGid()))
+			fmt.Printf(" => %s\n", Spotify.ConvertTo62(a.GetGid()))
 		}
 	}
 
 }
 
-func funcAlbum(session respot.Session, albumID string) {
-	album, err := session.Mercury().GetAlbum(utils.Base62ToHex(albumID))
+func funcAlbum(session respot.Session, albumURI string) {
+	_, album, err := session.Mercury().GetAlbum(albumURI)
 	if err != nil {
-		fmt.Println("Error loading album:", err)
+		fmt.Printf("Error loading album %q - %v", albumURI, err)
 		return
 	}
 
@@ -210,7 +209,7 @@ func funcAlbum(session respot.Session, albumID string) {
 
 	fmt.Printf("Artists: ")
 	for _, artist := range album.GetArtist() {
-		fmt.Printf("%s ", utils.ConvertTo62(artist.GetGid()))
+		fmt.Printf("%s ", Spotify.ConvertTo62(artist.GetGid()))
 	}
 	fmt.Printf("\n")
 
@@ -218,7 +217,7 @@ func funcAlbum(session respot.Session, albumID string) {
 		fmt.Printf("\nDisc %d (%s): \n", disc.GetNumber(), disc.GetName())
 
 		for _, track := range disc.GetTrack() {
-			fmt.Printf(" => %s\n", utils.ConvertTo62(track.GetGid()))
+			fmt.Printf(" => %s\n", Spotify.ConvertTo62(track.GetGid()))
 		}
 	}
 

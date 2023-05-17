@@ -7,11 +7,23 @@ import (
 	"github.com/arcspace/go-librespot/librespot/mercury"
 )
 
+// Forward declared method to create a new Spotify session
+var StartNewSession func(ctx *SessionCtx) (Session, error)
+
 func DefaultSessionCtx(deviceLabel string) *SessionCtx {
 	ctx := &SessionCtx{
 		DeviceName: deviceLabel,
 	}
 	return ctx
+}
+
+type SessionCtx struct {
+	process.Context              // logging & shutdown
+	Login           SessionLogin // means for the session to login
+	Info            SessionInfo  // filled in during Session.Login()
+	Keys            crypto.Keys  // If left nil, will be auto-generated
+	DeviceName      string       // Label of the device being used
+	DeviceUID       string       // if nil, auto-generated from DeviceName
 }
 
 type SessionLogin struct {
@@ -21,26 +33,10 @@ type SessionLogin struct {
 	OAuthToken string
 }
 
-type SessionCtx struct {
-	process.Context              // logging & shutdown
-	Info            SessionInfo  // filled in during Session.Login()
-	Login           SessionLogin // means for the session to login
-	Keys            crypto.Keys  // If left nil, will be auto-generated
-	DeviceName      string       // Label of the device being used
-	DeviceUID       string       // if nil, auto-generated from DeviceName
-}
-
 type SessionInfo struct {
-	Username string //  authenticated canonical username
-	AuthBlob []byte // reusable authentication blob for Spotify Connect devices
-	Country  string // user country returned by Spotify
-}
-
-type PinOpts struct {
-
-	// If set, MediaAsset.OnStart(Ctx().Context) will be called on the returned MediaAsset.
-	// This is for convenience but not desirable when the asset is in a time-to-live cache, for example.
-	StartInternally bool
+	Username       string // authenticated canonical username
+	AuthBlob       []byte // reusable authentication blob for Spotify Connect devices
+	Country        string // user country returned by Spotify
 }
 
 type Session interface {
@@ -57,5 +53,9 @@ type Session interface {
 	PinTrack(trackID string, opts PinOpts) (arc.MediaAsset, error)
 }
 
-// Forward declared method to create a new Spotify session
-var StartNewSession func(ctx *SessionCtx) (Session, error)
+type PinOpts struct {
+
+	// If set, MediaAsset.OnStart(Ctx().Context) will be called on the returned MediaAsset.
+	// This is for convenience but not desirable when the asset is in a time-to-live cache, for example.
+	StartInternally bool
+}

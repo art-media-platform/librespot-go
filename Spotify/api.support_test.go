@@ -1,4 +1,4 @@
-package utils
+package Spotify
 
 import (
 	"bytes"

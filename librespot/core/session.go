@@ -17,7 +17,6 @@ import (
 	"github.com/arcspace/go-librespot/librespot/core/connection"
 	"github.com/arcspace/go-librespot/librespot/core/crypto"
 	"github.com/arcspace/go-librespot/librespot/mercury"
-	"github.com/arcspace/go-librespot/librespot/utils"
 )
 
 func init() {
@@ -34,7 +33,7 @@ func StartSession(ctx *respot.SessionCtx) (respot.Session, error) {
 	}
 
 	if s.ctx.DeviceUID == "" {
-		s.ctx.DeviceUID = utils.GenerateDeviceId(s.ctx.DeviceName)
+		s.ctx.DeviceUID = respot.GenerateDeviceUID(s.ctx.DeviceName)
 	}
 
 	err := s.StartConnection()
@@ -50,8 +49,8 @@ type Session struct {
 	tcpCon     io.ReadWriter           // plain I/O network connection to the server
 	stream     connection.PacketStream // encrypted connection to the Spotify server
 	mercury    *mercury.Client         // mercury client associated with this session
-	//discovery  *discovery.Discovery    // discovery service used for Spotify Connect devices discovery
 	downloader asset.Downloader        // manages downloads
+	//discovery  *discovery.Discovery    // discovery service used for Spotify Connect devices discovery
 }
 
 func (s *Session) Stream() connection.PacketStream {
@@ -90,7 +89,7 @@ func (s *Session) PinTrack(trackID string, opts respot.PinOpts) (arc.MediaAsset,
 
 func (s *Session) StartConnection() error {
 
-	apUrl, err := utils.APResolve()
+	apUrl, err := respot.APResolve()
 	if err != nil {
 		return fmt.Errorf("could not get ap url: %+v", err)
 	}

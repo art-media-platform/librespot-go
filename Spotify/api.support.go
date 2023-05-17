@@ -1,4 +1,4 @@
-package utils
+package Spotify
 
 import (
 	"fmt"
@@ -7,6 +7,27 @@ import (
 )
 
 const alphabet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+const TrackUriPrefix = "spotify:track:"
+
+var ErrInvalidURI = fmt.Errorf("failed to extract track ID from")
+
+// ExtractAssetID returns the (ascii-based) hex track ID from a Spotify URI.
+func ExtractAssetID(uri string) (trackID, trackHexID string, err error) {
+	if strings.HasPrefix(uri, TrackUriPrefix) {
+		trackID = uri[len(TrackUriPrefix):]
+	} else {
+		trackID = uri
+	}
+
+	if len(trackID) != 22 {
+		err = fmt.Errorf("failed to extract track ID from %q", uri)
+		return
+	}
+
+	trackHexID = fmt.Sprintf("%x", Convert62(trackID))
+	return
+}
 
 func Convert62(id string) []byte {
 	base := big.NewInt(62)
@@ -51,8 +72,4 @@ func ConvertTo62(raw []byte) string {
 		result += "0"
 	}
 	return reverse(result)
-}
-
-func Base62ToHex(b62 string) string {
-	return fmt.Sprintf("%x", Convert62(b62))
 }

@@ -35,13 +35,13 @@ type connectGetInfo struct {
 type Discovery struct {
 	//keys       crypto.Keys
 	//cachePath  string
-	loginBlob  utils.BlobInfo
+	loginBlob  blob.BlobInfo
 	//deviceId   string
 	//deviceName string
 
 	mdnsServer  *mdns.Server
 	httpServer  *http.Server
-	devices     []respot.DeviceMdns
+	devices     []DeviceMdns
 	devicesLock sync.RWMutex
 }
 
@@ -64,7 +64,7 @@ func makeConnectGetInfo(deviceId string, deviceName string, publicKey string) co
 	}
 }
 
-func blobFromDiscovery(deviceName string) *utils.BlobInfo {
+func blobFromDiscovery(deviceName string) *blob.BlobInfo {
 	deviceId := utils.GenerateDeviceId(deviceName)
 	d := LoginFromConnect("", deviceId, deviceName)
 	return &d.loginBlob
@@ -110,7 +110,7 @@ func CreateFromBlob(blob utils.BlobInfo, cachePath, deviceId string, deviceName 
 }
 
 func CreateFromFile(cachePath, deviceId string, deviceName string) *Discovery {
-	blob, err := utils.BlobFromFile(cachePath)
+	blob, err := blob.BlobFromFile(cachePath)
 	if err != nil {
 		log.Fatal("failed to get blob from file")
 	}
@@ -131,21 +131,21 @@ func (d *Discovery) LoginBlob() utils.BlobInfo {
 }
 
 // Devices return an immutable copy of the current MDNS-discovered devices, thread-safe
-func (d *Discovery) Devices() []respot.DeviceMdns {
-	res := make([]respot.DeviceMdns, 0, len(d.devices))
+func (d *Discovery) Devices() []DeviceMdns {
+	res := make([]DeviceMdns, 0, len(d.devices))
 	return append(res, d.devices...)
 }
 
 func (d *Discovery) FindDevices() {
 	ch := make(chan *mdns.ServiceEntry, 10)
 
-	d.devices = make([]respot.DeviceMdns, 0)
+	d.devices = make([]DeviceMdns, 0)
 	go func() {
 		for entry := range ch {
 			cPath := findCpath(entry.InfoFields)
 			path := fmt.Sprintf("http://%v:%v%v", entry.AddrV4, entry.Port, cPath)
 			d.devicesLock.Lock()
-			d.devices = append(d.devices, respot.DeviceMdns{
+			d.devices = append(d.devices, DeviceMdns{
 				Path: path,
 				Name: strings.Replace(entry.Name, "._spotify-connect._tcp.local.", "", 1),
 			})

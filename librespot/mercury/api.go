@@ -101,25 +101,41 @@ func (m *Client) Suggest(search string) (*SuggestResult, error) {
 	return ParseSuggest(data)
 }
 
-func (m *Client) GetTrack(id string) (*Spotify.Track, error) {
-	uri := "hm://metadata/4/track/" + id
-	result := &Spotify.Track{}
-	err := m.mercuryGetProto(uri, result)
-	return result, err
+func (m *Client) GetTrack(uri string) (trackID string, track *Spotify.Track, err error) {
+	var hexID string
+	trackID, hexID, err = Spotify.ExtractAssetID(uri)
+	if err != nil {
+		return
+	}
+	url := "hm://metadata/4/track/" + hexID
+	track = &Spotify.Track{}
+	err = m.mercuryGetProto(url, track)
+	return
 }
 
-func (m *Client) GetArtist(id string) (*Spotify.Artist, error) {
-	uri := "hm://metadata/4/artist/" + id
-	result := &Spotify.Artist{}
-	err := m.mercuryGetProto(uri, result)
-	return result, err
+func (m *Client) GetArtist(uri string) (artistID string, artist*Spotify.Artist, err error) {
+	var hexID string
+	artistID, hexID, err = Spotify.ExtractAssetID(uri)
+	if err != nil {
+		return
+	}
+	url := "hm://metadata/4/artist/" + hexID
+	artist = &Spotify.Artist{}
+	err = m.mercuryGetProto(url, artist)
+	return
 }
 
-func (m *Client) GetAlbum(id string) (*Spotify.Album, error) {
-	uri := "hm://metadata/4/album/" + id
-	result := &Spotify.Album{}
-	err := m.mercuryGetProto(uri, result)
-	return result, err
+func (m *Client) GetAlbum(uri string) (albumID string, album *Spotify.Album, err error) {
+	var hexID string
+	albumID, hexID, err = Spotify.ExtractAssetID(uri)
+	if err != nil {
+		return
+	}
+	
+	url := "hm://metadata/4/album/" + hexID
+	album =  &Spotify.Album{}
+	err = m.mercuryGetProto(url, album)
+	return
 }
 
 func ParseSuggest(body []byte) (*SuggestResult, error) {

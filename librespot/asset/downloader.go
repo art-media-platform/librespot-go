@@ -16,7 +16,6 @@ import (
 	"github.com/arcspace/go-librespot/Spotify"
 	"github.com/arcspace/go-librespot/librespot/core/connection"
 	"github.com/arcspace/go-librespot/librespot/mercury"
-	"github.com/arcspace/go-librespot/librespot/utils"
 )
 
 type Downloader interface {
@@ -64,18 +63,9 @@ func NewDownloader(conn connection.PacketStream, client *mercury.Client) Downloa
 	return dl
 }
 
-const kTrackPrefix = "spotify:track:"
-
 func (dl *downloader) PinTrack(assetURI string) (arc.MediaAsset, error) {
-
-	if !strings.HasPrefix(assetURI, kTrackPrefix) {
-		return nil, fmt.Errorf("invalid URI: %s", assetURI)
-	}
-
-	assetID := utils.Base62ToHex(assetURI[len(kTrackPrefix):])
-
 	// Get the track metadata: it holds information about which files and encodings are available
-	track, err := dl.mercury.GetTrack(assetID)
+	assetID, track, err := dl.mercury.GetTrack(assetURI)
 	if err != nil {
 		return nil, errors.Wrap(err, "error getting track")
 	}
@@ -108,7 +98,7 @@ func (dl *downloader) PinTrack(assetURI string) (arc.MediaAsset, error) {
 		asset.mediaType = "audio/aac"
 	}
 
-	asset.label = fmt.Sprintf("%s - %s%s", asset.track.GetArtist()[0].GetName(), asset.track.GetName(), ext)
+	asset.label = fmt.Sprintf("%s - %s (%s)%s", asset.track.GetArtist()[0].GetName(), asset.track.GetName(), assetID, ext)
 
 	err = dl.loadTrackKey(asset)
 	if err != nil {
