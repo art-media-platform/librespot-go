@@ -5,7 +5,7 @@ go 1.18
 // replace github.com/arcspace/go-arc-sdk => ../go-arc-sdk
 
 require (
-	github.com/arcspace/go-arc-sdk v0.0.0-20230512170303-7b88893310c8
+	github.com/arcspace/go-arc-sdk v0.0.0-20230515171510-a7903dbeb29e
 	github.com/golang/protobuf v1.5.3
 	golang.org/x/crypto v0.9.0
 	google.golang.org/protobuf v1.30.0
