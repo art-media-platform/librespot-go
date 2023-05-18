@@ -117,7 +117,7 @@ func newMediaAsset(dl *downloader, track *Spotify.Track) *mediaAsset {
 		// 	},
 		// },
 		onChunkComplete: make(chan *assetChunk, 1),
-		fetchAhead:      5,
+		fetchAhead:      4,
 	}
 	ma.chunkChange = sync.Cond{
 		L: &ma.chunksMu,
@@ -129,12 +129,12 @@ func newMediaAsset(dl *downloader, track *Spotify.Track) *mediaAsset {
 	return ma
 }
 
-func (ma *mediaAsset) setResidentByteLimit(byteLimit int) {
+func (a *mediaAsset) setResidentByteLimit(byteLimit int) {
 	chunkLimit := 6 + byteLimit/kChunkByteSize
-	ma.residentChunkLimit = chunkLimit
-	if ma.chunks == nil {
+	a.residentChunkLimit = chunkLimit
+	if a.chunks == nil {
 		initialSz := min(chunkLimit, 70)
-		ma.chunks = make(map[ChunkIdx]*assetChunk, initialSz)
+		a.chunks = make(map[ChunkIdx]*assetChunk, initialSz)
 	}
 }
 
@@ -152,14 +152,6 @@ func (ma *mediaAsset) OnStart(ctx process.Context) error {
 	go ma.runLoop()
 	return nil
 }
-
-// // pre: ma.chunksMu is locked
-// func (ma *mediaAsset) getChunk(idx ChunkIdx) *assetChunk {
-// 	if chunk := ma.chunks[idx]; chunk != nil {
-// 		return chunk
-// 	}
-// 	return nil
-// }
 
 // pre: ma.chunksMu is locked
 func (ma *mediaAsset) getReadyChunk(idx ChunkIdx) *assetChunk {
@@ -244,7 +236,7 @@ func (ma *mediaAsset) runLoop() {
 				ma.chunksMu.Lock()
 				ma.fetching -= 1
 				if kDebug {
-					ma.Context.Infof(2, "RECV chunk %03d   fetching: %03d\n", chunk.Idx, ma.fetching)
+					ma.Context.Infof(2, "RECV chunk %d/%d/%d", chunk.Idx, ma.fetching, ma.finalChunk)
 				}
 				{
 					// The size should only change when the first chunk arrives
@@ -254,7 +246,7 @@ func (ma *mediaAsset) runLoop() {
 					}
 					ma.requestChunkIfNeeded(ma.latestRead)
 				}
-				ma.chunkChange.Signal()
+				ma.chunkChange.Broadcast()
 				ma.chunksMu.Unlock()
 
 			} else {
@@ -266,7 +258,7 @@ func (ma *mediaAsset) runLoop() {
 			running = false
 
 			ma.chunksMu.Lock()
-			ma.chunkChange.Signal()
+			ma.chunkChange.Broadcast()
 			ma.chunksMu.Unlock()
 		}
 	}
@@ -275,37 +267,40 @@ func (ma *mediaAsset) runLoop() {
 // Pre: ma.chunksMu is locked
 func (ma *mediaAsset) requestChunkIfNeeded(needIdx ChunkIdx) {
 
-	if ma.fetching >= kMaxConcurrentFetches {
-		return
-	}
-
 	fetchIdx := ChunkIdx_Nil
 
+	// Find a chunk to fetch starting at the the chunk we need and step rightward
 	{
-		idx := needIdx + ma.fetchAhead
-		if idx > ma.finalChunk {
-			idx = ma.finalChunk
-		}
-		// Most of the time, we'll have fetched ahead, so start from the right
-		for ; idx >= needIdx; idx-- {
+		for ahead := ChunkIdx(0); ahead <= ma.fetchAhead; ahead++ {
+			idx := needIdx + ahead
+			if idx > ma.finalChunk {
+				break
+			}
 			chunk := ma.chunks[idx]
 			if chunk == nil {
-				fetchIdx = idx
+				// Fetch only if not fetching ahead *and* within max concurrent fetches
+				if ahead == 0 || ma.fetching < kMaxConcurrentFetches {
+					fetchIdx = idx
+				}
+				break
 			}
 		}
 	}
 
+	if kDebug {
+		ma.Infof(2, "requestChunkIfNeeded: needIdx: %d, fetchIdx: %d/%d/%d", needIdx, fetchIdx, ma.fetching, ma.finalChunk)
+	}
+
 	if fetchIdx >= 0 {
-		ma.fetching += 1
 		chunk, err := ma.downloader.RequestChunk(fetchIdx, ma)
 		if err != nil {
 			ma.throwErr(err)
 			return
 		} else {
+			ma.fetching += 1
 			ma.chunks[fetchIdx] = chunk
 		}
 	}
-
 	/*
 		{
 			L := readingAt
@@ -406,9 +401,11 @@ func (ma *mediaAsset) readChunk(idx ChunkIdx) (*assetChunk, error) {
 	ma.latestRead = idx
 
 	for ma.fatalErr == nil {
+
+		// Call this before we exit to ensure we fetch ahead
 		ma.requestChunkIfNeeded(idx)
 
-		// Is the chunk ready -- most of the time it should be ready since we read ahead
+		// Is the chunk ready? -- most of the time it will be since we read ahead
 		chunk := ma.getReadyChunk(idx)
 		if chunk != nil {
 			ma.accessCount++
@@ -416,8 +413,6 @@ func (ma *mediaAsset) readChunk(idx ChunkIdx) (*assetChunk, error) {
 			chunk.numReaders.Add(1)
 			return chunk, nil
 		}
-
-		//ma.Context.Infof(2, "WAIT  %03d   fetching: %003d\n", idx, ma.fetching)
 
 		// Wait for signal; unlocks ma.chunkChange.L
 		ma.chunkChange.Wait()
@@ -505,7 +500,7 @@ func (r *assetReader) Read(buf []byte) (int, error) {
 
 	if kDebug {
 		pos := r.readPos - r.asset.dataStartOfs
-		r.asset.Infof(2, "READ COMPLETE %d bytes read, @%7d", bytesRead, pos)
+		r.asset.Infof(2, " <--- COMPLETE %d bytes read, @%7d\n", bytesRead, pos)
 	}
 
 	return bytesRead, nil
