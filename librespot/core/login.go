@@ -28,10 +28,10 @@ func (sess *Session) Login() error {
 			login.AuthData,
 			Spotify.AuthenticationType_AUTHENTICATION_STORED_SPOTIFY_CREDENTIALS.Enum(),
 		)
-	} else if login.OAuthToken != "" {
+	} else if login.AuthToken != "" {
 		packet = sess.makeLoginBlobPacket(
 			"",
-			[]byte(sess.ctx.Login.OAuthToken),
+			[]byte(sess.ctx.Login.AuthToken),
 			Spotify.AuthenticationType_AUTHENTICATION_SPOTIFY_TOKEN.Enum(),
 		)
 	} else if login.Username != "" && login.Password != "" {

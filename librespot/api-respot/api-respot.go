@@ -27,16 +27,16 @@ type SessionCtx struct {
 }
 
 type SessionLogin struct {
-	Username   string
-	Password   string
-	AuthData   []byte
-	OAuthToken string
+	Username  string
+	Password  string // AUTHENTICATION_USER_PASS
+	AuthData  []byte // AUTHENTICATION_STORED_SPOTIFY_CREDENTIALS
+	AuthToken string // AUTHENTICATION_SPOTIFY_TOKEN
 }
 
 type SessionInfo struct {
-	Username       string // authenticated canonical username
-	AuthBlob       []byte // reusable authentication blob for Spotify Connect devices
-	Country        string // user country returned by Spotify
+	Username string // authenticated canonical username
+	AuthBlob []byte // reusable authentication blob for Spotify Connect devices
+	Country  string // user country returned by Spotify
 }
 
 type Session interface {

@@ -52,7 +52,7 @@ func mainStart() error {
 		login := &ctx.Login
 		login.Username = *username
 		login.Password = *password
-		login.OAuthToken = ""
+		login.AuthToken = ""
 
 		// Authenticate reusing an existing blob
 		if len(*blobPath) > 0 {
@@ -62,9 +62,9 @@ func mainStart() error {
 			}
 		}
 
-		if login.Password == "" && login.OAuthToken == "" {
+		if login.Password == "" && login.AuthToken == "" {
 			var err error
-			login.OAuthToken, err = oauth.LoginOAuth(os.Getenv("client_id"), os.Getenv("client_secret"), os.Getenv("redirect_uri"))
+			login.AuthToken, err = oauth.LoginOAuth(os.Getenv("client_id"), os.Getenv("client_secret"), os.Getenv("redirect_uri"))
 			if err != nil {
 				return err
 			}
