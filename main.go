@@ -38,7 +38,7 @@ func mainStart() error {
 	devicename := flag.String("devicename", defaultDeviceName, "name of device")
 	flag.Parse()
 
-	ctx := respot.DefaultSessionCtx(*devicename)
+	ctx := respot.DefaultSessionContext(*devicename)
 	ctx.Context, _ = process.Start(&process.Task{
 		Label: "main",
 	})
@@ -226,7 +226,7 @@ func funcAlbum(session respot.Session, albumURI string) {
 func funcPlaylists(session respot.Session) {
 	fmt.Println("Listing playlists")
 
-	playlist, err := session.Mercury().GetRootPlaylist(session.Ctx().Info.Username)
+	playlist, err := session.Mercury().GetRootPlaylist(session.Context().Info.Username)
 
 	if err != nil || playlist.Contents == nil {
 		fmt.Println("Error getting root list: ", err)

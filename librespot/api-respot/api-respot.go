@@ -8,16 +8,16 @@ import (
 )
 
 // Forward declared method to create a new Spotify session
-var StartNewSession func(ctx *SessionCtx) (Session, error)
+var StartNewSession func(ctx *SessionContext) (Session, error)
 
-func DefaultSessionCtx(deviceLabel string) *SessionCtx {
-	ctx := &SessionCtx{
+func DefaultSessionContext(deviceLabel string) *SessionContext {
+	ctx := &SessionContext{
 		DeviceName: deviceLabel,
 	}
 	return ctx
 }
 
-type SessionCtx struct {
+type SessionContext struct {
 	process.Context              // logging & shutdown
 	Login           SessionLogin // means for the session to login
 	Info            SessionInfo  // filled in during Session.Login()
@@ -40,8 +40,10 @@ type SessionInfo struct {
 }
 
 type Session interface {
-	// Returns the SessionCtx current in use by this session
-	Ctx() *SessionCtx
+	Close() error 
+	
+	// Returns the SessionContext current in use by this session
+	Context() *SessionContext
 
 	// Initiates login with params contained in Ctx.Login
 	Login() error

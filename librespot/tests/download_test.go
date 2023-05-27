@@ -95,7 +95,7 @@ func startSession(host process.Context) (respot.Session, error) {
 	devicename := flag.String("devicename", "librespot", "name of device")
 	flag.Parse()
 
-	ctx := respot.DefaultSessionCtx(*devicename)
+	ctx := respot.DefaultSessionContext(*devicename)
 	ctx.Context = host
 
 	sess, err := respot.StartNewSession(ctx)

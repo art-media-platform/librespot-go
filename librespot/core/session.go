@@ -23,7 +23,7 @@ func init() {
 	respot.StartNewSession = StartSession
 }
 
-func StartSession(ctx *respot.SessionCtx) (respot.Session, error) {
+func StartSession(ctx *respot.SessionContext) (respot.Session, error) {
 	s := &Session{
 		ctx: ctx,
 	}
@@ -45,7 +45,7 @@ func StartSession(ctx *respot.SessionCtx) (respot.Session, error) {
 
 // Session represents an active Spotify connection
 type Session struct {
-	ctx        *respot.SessionCtx
+	ctx        *respot.SessionContext
 	tcpCon     io.ReadWriter           // plain I/O network connection to the server
 	stream     connection.PacketStream // encrypted connection to the Spotify server
 	mercury    *mercury.Client         // mercury client associated with this session
@@ -69,7 +69,7 @@ func (s *Session) Downloader() asset.Downloader {
 	return s.downloader
 }
 
-func (s *Session) Ctx() *respot.SessionCtx {
+func (s *Session) Context() *respot.SessionContext {
 	return s.ctx
 }
 
@@ -173,7 +173,13 @@ func (s *Session) StartConnection() error {
 		}
 		return s, s.doLogin(loginPacket, d.LoginBlob().Username)
 	}
+
 */
+
+func (s *Session) Close() error {
+	return s.disconnect()
+}
+
 func (s *Session) disconnect() error {
 	if s.tcpCon != nil {
 		conn := s.tcpCon.(net.Conn)
