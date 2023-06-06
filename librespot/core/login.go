@@ -44,13 +44,13 @@ func (sess *Session) Login() error {
 		return errors.New("no login method provided")
 	}
 
-	return sess.doLogin(packet, sess.ctx.Login.Username)
+	return sess.startSession(packet, sess.ctx.Login.Username)
 }
 
-func (s *Session) doLogin(packet []byte, username string) error {
+func (s *Session) startSession(loginPacket []byte, username string) error {
 	s.ctx.Info = respot.SessionInfo{}
 
-	err := s.stream.SendPacket(connection.PacketLogin, packet)
+	err := s.stream.SendPacket(connection.PacketLogin, loginPacket)
 	if err != nil {
 		log.Fatal("bad shannon write", err)
 	}
@@ -69,9 +69,20 @@ func (s *Session) doLogin(packet []byte, username string) error {
 	s.ctx.Info.Username = user
 	s.ctx.Info.AuthBlob = welcome.GetReusableAuthCredentials()
 
-	// Poll for acknowledge before loading - needed for gopherjs
-	// s.poll()
-	go s.runPollLoop() // TODO: add context.Context exit!
+	go func() {
+		for {
+			cmd, data, err := s.stream.RecvPacket()
+			if err != nil {
+				s.planReconnect()
+				break
+			} else {
+				err = s.handle(cmd, data)
+				if err != nil {
+					fmt.Println("Error handling packet: ", err)
+				}
+			}
+		}
+	}()
 
 	return nil
 }

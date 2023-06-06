@@ -2,10 +2,12 @@ package core
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"log"
 	"net"
+	"sync/atomic"
 	"time"
 
 	"github.com/golang/protobuf/proto"
@@ -46,6 +48,7 @@ func StartSession(ctx *respot.SessionContext) (respot.Session, error) {
 // Session represents an active Spotify connection
 type Session struct {
 	ctx        *respot.SessionContext
+	closed     atomic.Int32
 	tcpCon     io.ReadWriter           // plain I/O network connection to the server
 	stream     connection.PacketStream // encrypted connection to the Spotify server
 	mercury    *mercury.Client         // mercury client associated with this session
@@ -177,6 +180,7 @@ func (s *Session) StartConnection() error {
 */
 
 func (s *Session) Close() error {
+	s.closed.Store(1)
 	return s.disconnect()
 }
 
@@ -192,8 +196,25 @@ func (s *Session) disconnect() error {
 	return nil
 }
 
+func (s *Session) isClosing() bool {
+	select {
+	case <-s.ctx.Context.Closing():
+		return true
+	default:
+		if s.closed.Load() != 0 {
+			return true
+		}
+	}
+
+	return false
+}
+
 func (s *Session) doReconnect() error {
 	s.disconnect()
+
+	if s.isClosing() {
+		return errors.New("respot session is closing")
+	}
 
 	err := s.StartConnection()
 	if err != nil {
@@ -205,38 +226,20 @@ func (s *Session) doReconnect() error {
 		s.ctx.Info.AuthBlob,
 		Spotify.AuthenticationType_AUTHENTICATION_STORED_SPOTIFY_CREDENTIALS.Enum(),
 	)
-	return s.doLogin(packet, s.ctx.Info.Username)
+	return s.startSession(packet, s.ctx.Info.Username)
 }
 
 func (s *Session) planReconnect() {
+	if s.isClosing() {
+		return
+	}
+
 	go func() {
 		time.Sleep(1 * time.Second)
-
 		if err := s.doReconnect(); err != nil {
-			// Try to reconnect again in a second
 			s.planReconnect()
 		}
 	}()
-}
-
-func (s *Session) runPollLoop() {
-	for {
-		cmd, data, err := s.stream.RecvPacket()
-		if err != nil {
-			log.Println("Error during RecvPacket: ", err)
-
-			if err == io.EOF {
-				// We've been disconnected, reconnect
-				s.planReconnect()
-				break
-			}
-		} else {
-			err = s.handle(cmd, data)
-			if err != nil {
-				fmt.Println("Error handling packet: ", err)
-			}
-		}
-	}
 }
 
 func (s *Session) handle(cmd uint8, data []byte) error {
