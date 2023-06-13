@@ -93,7 +93,7 @@ func (dl *downloader) PinTrack(assetURI string) (arc.MediaAsset, error) {
 		asset.mediaType = "audio/mpeg"
 	case strings.HasSuffix(ext, ".ogg"):
 		asset.mediaType = "audio/ogg"
-		asset.dataStartOfs = SPOTIFY_OGG_HEADER_SIZE
+		asset.assetByteOfs = SPOTIFY_OGG_HEADER_SIZE
 	case strings.HasSuffix(ext, ".aac"):
 		asset.mediaType = "audio/aac"
 	}

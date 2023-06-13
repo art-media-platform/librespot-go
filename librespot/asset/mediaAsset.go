@@ -52,44 +52,20 @@ type assetChunk struct {
 
 }
 
-/*
-
-// inclusive range of chunks
-type chunkRange struct {
-	Start  ChunkIdx
-	Length ChunkIdx
-}
-
-func (r *chunkRange) Contains(idx ChunkIdx) bool {
-	return idx >= r.Start && idx < r.Start+r.Length
-}
-
-func (r *chunkRange) AssignRange(lo, hi, hi_max ChunkIdx) {
-	if lo < 0 {
-		lo = 0
-	}
-	r.Start = lo
-	if hi > hi_max {
-		hi = hi_max
-	}
-	r.Length = hi - lo + 1
-}
-*/
-
 // mediaAsset represents a downloadable/cached audio file fetched by Spotify, in an encoded format (OGG, etc)
 type mediaAsset struct {
 	process.Context
 
 	label        string
 	mediaType    string
-	totalBytes   int64 // 0 denotes not known
+	assetByteSz  int64 // contiguous chunk byte span; 0 denotes chunk #0 is needed
+	assetByteOfs int64 // offset into chunk #0 where the asset data starts
 	finalChunk   ChunkIdx
 	track        *Spotify.Track
 	trackFile    *Spotify.AudioFile
 	downloader   *downloader
 	cipher       cipher.Block
 	decrypter    crypto.BlockDecrypter
-	dataStartOfs int64
 	chunksMu     sync.Mutex
 	chunks       map[ChunkIdx]*assetChunk
 	//chunks        redblacktree.Tree
@@ -107,8 +83,11 @@ type mediaAsset struct {
 func newMediaAsset(dl *downloader, track *Spotify.Track) *mediaAsset {
 
 	ma := &mediaAsset{
-		downloader: dl,
-		track:      track,
+		downloader:      dl,
+		track:           track,
+		assetByteSz:     0,
+		fetchAhead:      4,
+		onChunkComplete: make(chan *assetChunk, 1),
 		// chunks: redblacktree.Tree{
 		// 	Comparator: func(A, B interface{}) int {
 		// 		idx_a := A.(ChunkIdx)
@@ -116,8 +95,7 @@ func newMediaAsset(dl *downloader, track *Spotify.Track) *mediaAsset {
 		// 		return int(idx_b - idx_a)
 		// 	},
 		// },
-		onChunkComplete: make(chan *assetChunk, 1),
-		fetchAhead:      4,
+
 	}
 	ma.chunkChange = sync.Cond{
 		L: &ma.chunksMu,
@@ -125,8 +103,13 @@ func newMediaAsset(dl *downloader, track *Spotify.Track) *mediaAsset {
 
 	// TEST ME
 	ma.setResidentByteLimit(10 * 1024 * 1024)
-
 	return ma
+}
+
+// needsFirstChunk returns if chunk 0 has been fetched.
+// Once chunk 0 is fetched, this asset chunk profile is known.
+func (a *mediaAsset) needsFirstChunk() bool {
+	return a.assetByteSz == 0
 }
 
 func (a *mediaAsset) setResidentByteLimit(byteLimit int) {
@@ -240,8 +223,8 @@ func (ma *mediaAsset) runLoop() {
 				}
 				{
 					// The size should only change when the first chunk arrives
-					if sz := chunk.totalAssetSz; sz != ma.totalBytes {
-						ma.totalBytes = sz
+					if sz := chunk.totalAssetSz; sz != ma.assetByteSz {
+						ma.assetByteSz = sz
 						ma.finalChunk = ChunkIdxAtOffset(sz)
 					}
 					ma.requestChunkIfNeeded(ma.latestRead)
@@ -428,6 +411,13 @@ func min(a, b int) int {
 	return b
 }
 
+func max(a, b int64) int64 {
+	if a > b {
+		return a
+	}
+	return b
+}
+
 func (asset *mediaAsset) NewAssetReader() (arc.AssetReader, error) {
 	reader := &assetReader{
 		asset:   asset,
@@ -453,34 +443,36 @@ func ChunkIdxAtOffset(byteOfs int64) ChunkIdx {
 }
 
 type assetReader struct {
+	hotChunk atomic.Pointer[assetChunk]
+	closed   atomic.Bool
 	asset    *mediaAsset
-	hotChunk *assetChunk
 	readPos  int64
 }
 
 // Read is an implementation of the io.Reader interface.
 // This function will block until a non-zero amount of data is available (or io.EOF or a fatal error occurs).
 func (r *assetReader) Read(buf []byte) (int, error) {
+	if err := r.checkState(); err != nil {
+		return 0, err
+	}
+
 	bytesRemain := len(buf)
 	bytesRead := 0
 
-	if r.readPos < r.asset.dataStartOfs {
-		r.readPos = r.asset.dataStartOfs
-	}
+	r.readPos = max(r.readPos, r.asset.assetByteOfs)
 
 	if kDebug {
-		pos := r.readPos - r.asset.dataStartOfs
+		pos := r.readPos - r.asset.assetByteOfs
 		r.asset.Infof(2, "READ REQ %7d bytes, @%7d", bytesRemain, pos)
 	}
 
 	for bytesRemain > 0 {
-		hotIdx := ChunkIdxAtOffset(r.readPos)
-		hotChunk, err := r.seekChunk(hotIdx)
+		hotChunk, err := r.lockChunkAtOfs(r.readPos)
 		if err != nil {
 			return 0, err
 		}
 
-		relPos := int(r.readPos - hotIdx.StartByteOffset())
+		relPos := int(r.readPos - hotChunk.Idx.StartByteOffset())
 		runSz := len(hotChunk.Data) - relPos
 		runSz = min(runSz, bytesRemain)
 		if runSz > 0 {
@@ -488,7 +480,7 @@ func (r *assetReader) Read(buf []byte) (int, error) {
 			r.readPos += int64(runSz)
 			bytesRead += runSz
 			bytesRemain -= runSz
-		} else if runSz == 0 && hotIdx >= r.asset.finalChunk {
+		} else if runSz == 0 && hotChunk.Idx >= r.asset.finalChunk {
 			if bytesRead == 0 {
 				return 0, io.EOF
 			}
@@ -499,7 +491,7 @@ func (r *assetReader) Read(buf []byte) (int, error) {
 	}
 
 	if kDebug {
-		pos := r.readPos - r.asset.dataStartOfs
+		pos := r.readPos - r.asset.assetByteOfs
 		r.asset.Infof(2, " <--- COMPLETE %d bytes read, @%7d\n", bytesRead, pos)
 	}
 
@@ -507,57 +499,85 @@ func (r *assetReader) Read(buf []byte) (int, error) {
 }
 
 func (r *assetReader) Seek(offset int64, whence int) (int64, error) {
-
-	// If we already have a chunk then we don't have to bootstrap
-	if r.hotChunk == nil {
-		_, err := r.seekChunk(0)
-		if err != nil {
-			return 0, err
-		}
+	if err := r.checkState(); err != nil {
+		return 0, err
 	}
 
 	switch whence {
 	case io.SeekStart:
-		r.readPos = offset + r.asset.dataStartOfs
+		r.readPos = offset + r.asset.assetByteOfs
 	case io.SeekEnd:
-		r.readPos = offset + r.asset.totalBytes
+		r.readPos = offset + r.asset.assetByteSz
 	case io.SeekCurrent:
 		r.readPos += offset
 	}
 
-	pos := r.readPos - r.asset.dataStartOfs
+	pos := r.readPos - r.asset.assetByteOfs
 	if kDebug {
 		r.asset.Context.Infof(2, "SEEK  %12d", pos)
 	}
 	return pos, nil
 }
 
-func (r *assetReader) seekChunk(idx ChunkIdx) (*assetChunk, error) {
+func (r *assetReader) checkState() error {
+	if r.closed.Load() {
+		return io.ErrClosedPipe
+	}
 
-	// If we already have the chunk, no need to get it from the asset
-	{
-		hotChunk := r.hotChunk
-		if hotChunk != nil {
-			if hotChunk.Idx == idx {
-				return hotChunk, nil
-			} else {
-				hotChunk.numReaders.Add(-1)
-			}
+	// We don't know anything until we have the first chunk
+	if r.asset.needsFirstChunk() {
+		_, err := r.lockChunkAtOfs(0)
+		if err != nil {
+			return err
 		}
 	}
 
-	asset := r.asset
-	if asset == nil {
-		return nil, io.ErrClosedPipe
+	return nil
+}
+
+// gets and locks the returned the chunk containing the given starting data offset, blocking until it is available (or fatal error).
+func (r *assetReader) lockChunkAtOfs(rawOfs int64) (*assetChunk, error) {
+	idx := ChunkIdxAtOffset(rawOfs)
+
+	// If we already have the chunk, no need to get it from the asset.
+	{
+		hotChunk := r.hotChunk.Load()
+		if hotChunk != nil && hotChunk.Idx == idx {
+			return hotChunk, nil
+		}
 	}
 
+	chunk, err := r.asset.readChunk(idx)
+	if err == nil {
+		err = r.lockChunk(chunk)
+	}
+	return chunk, err
+}
+
+func (r *assetReader) lockChunk(chunk *assetChunk) error {
 	var err error
-	r.hotChunk, err = asset.readChunk(idx)
-	return r.hotChunk, err
+	
+	// If this reader was closed, release the chunk we want to lock
+	if chunk != nil && r.closed.Load() {
+		chunk.numReaders.Add(-1)
+		chunk = nil
+		err = io.ErrClosedPipe
+	}
+	
+	// Release the prev chunk we locked if applicable.
+	prev := r.hotChunk.Swap(chunk)
+	if prev != nil {
+		prev.numReaders.Add(-1)
+	}
+	return err
 }
 
 func (r *assetReader) Close() error {
-	r.seekChunk(ChunkIdx_Nil) // released cached chunk
-	r.asset = nil
+	if r.closed.CompareAndSwap(false, true) {
+		r.lockChunk(nil)
+		if kDebug {
+			r.asset.Infof(2, "CLOSED")
+		}
+	}
 	return nil
 }
