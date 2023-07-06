@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/arcspace/go-arc-sdk/stdlib/log"
-	"github.com/arcspace/go-arc-sdk/stdlib/process"
+	"github.com/arcspace/go-arc-sdk/stdlib/task"
 	respot "github.com/arcspace/go-librespot/librespot/api-respot"
 	_ "github.com/arcspace/go-librespot/librespot/core" // bootstrapping
 	"github.com/arcspace/go-librespot/librespot/core/oauth"
@@ -17,7 +17,7 @@ import (
 func TestDownload(t *testing.T) {
 	log.UseStockFormatter(24, true)
 
-	host, _ := process.Start(&process.Task{
+	host, _ := task.Start(&task.Task{
 		Label: "download-test",
 		OnClosed: func() {
 			fmt.Println("download-test shutdown complete")
@@ -88,7 +88,7 @@ func assetTests(sess respot.Session) error {
 	return nil
 }
 
-func startSession(host process.Context) (respot.Session, error) {
+func startSession(host task.Context) (respot.Session, error) {
 
 	// Read flags from commandline
 	//blob := flag.String("blob", "blob.bin", "spotify auth blob")

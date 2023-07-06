@@ -2,7 +2,7 @@ package respot
 
 import (
 	"github.com/arcspace/go-arc-sdk/apis/arc"
-	"github.com/arcspace/go-arc-sdk/stdlib/process"
+	"github.com/arcspace/go-arc-sdk/stdlib/task"
 	"github.com/arcspace/go-librespot/librespot/core/crypto"
 	"github.com/arcspace/go-librespot/librespot/mercury"
 )
@@ -18,12 +18,12 @@ func DefaultSessionContext(deviceLabel string) *SessionContext {
 }
 
 type SessionContext struct {
-	process.Context              // logging & shutdown
-	Login           SessionLogin // means for the session to login
-	Info            SessionInfo  // filled in during Session.Login()
-	Keys            crypto.Keys  // If left nil, will be auto-generated
-	DeviceName      string       // Label of the device being used
-	DeviceUID       string       // if nil, auto-generated from DeviceName
+	task.Context              // logging & shutdown
+	Login        SessionLogin // means for the session to login
+	Info         SessionInfo  // filled in during Session.Login()
+	Keys         crypto.Keys  // If left nil, will be auto-generated
+	DeviceName   string       // Label of the device being used
+	DeviceUID    string       // if nil, auto-generated from DeviceName
 }
 
 type SessionLogin struct {
@@ -40,8 +40,8 @@ type SessionInfo struct {
 }
 
 type Session interface {
-	Close() error 
-	
+	Close() error
+
 	// Returns the SessionContext current in use by this session
 	Context() *SessionContext
 

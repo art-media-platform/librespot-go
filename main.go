@@ -10,7 +10,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/arcspace/go-arc-sdk/stdlib/process"
+	"github.com/arcspace/go-arc-sdk/stdlib/task"
 	"github.com/arcspace/go-librespot/Spotify"
 	respot "github.com/arcspace/go-librespot/librespot/api-respot"
 	_ "github.com/arcspace/go-librespot/librespot/core" // bootstrapping
@@ -39,7 +39,7 @@ func mainStart() error {
 	flag.Parse()
 
 	ctx := respot.DefaultSessionContext(*devicename)
-	ctx.Context, _ = process.Start(&process.Task{
+	ctx.Context, _ = task.Start(&task.Task{
 		Label: "main",
 	})
 

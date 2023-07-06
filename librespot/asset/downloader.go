@@ -11,8 +11,8 @@ import (
 	"sync"
 
 	"github.com/arcspace/go-arc-sdk/apis/arc"
+	"github.com/arcspace/go-arc-sdk/stdlib/task"
 	"github.com/arcspace/go-arc-sdk/stdlib/errors"
-	"github.com/arcspace/go-arc-sdk/stdlib/process"
 	"github.com/arcspace/go-librespot/Spotify"
 	"github.com/arcspace/go-librespot/librespot/core/connection"
 	"github.com/arcspace/go-librespot/librespot/mercury"
@@ -26,7 +26,7 @@ type Downloader interface {
 }
 
 type downloader struct {
-	process.Context
+	task.Context
 	stream  connection.PacketStream
 	mercury *mercury.Client
 

@@ -8,7 +8,7 @@ import (
 	"sync/atomic"
 
 	"github.com/arcspace/go-arc-sdk/apis/arc"
-	"github.com/arcspace/go-arc-sdk/stdlib/process"
+	"github.com/arcspace/go-arc-sdk/stdlib/task"
 	"github.com/arcspace/go-librespot/Spotify"
 	"github.com/arcspace/go-librespot/librespot/core/crypto"
 )
@@ -54,7 +54,7 @@ type assetChunk struct {
 
 // mediaAsset represents a downloadable/cached audio file fetched by Spotify, in an encoded format (OGG, etc)
 type mediaAsset struct {
-	process.Context
+	task.Context
 
 	label        string
 	mediaType    string
@@ -130,7 +130,7 @@ func (ma *mediaAsset) MediaType() string {
 }
 
 // pre: ma.chunksMu is locked
-func (ma *mediaAsset) OnStart(ctx process.Context) error {
+func (ma *mediaAsset) OnStart(ctx task.Context) error {
 	ma.Context = ctx
 	go ma.runLoop()
 	return nil
