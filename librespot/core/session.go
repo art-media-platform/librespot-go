@@ -12,13 +12,13 @@ import (
 
 	"github.com/golang/protobuf/proto"
 
-	"github.com/arcspace/go-arc-sdk/apis/arc"
-	"github.com/arcspace/go-librespot/Spotify"
-	respot "github.com/arcspace/go-librespot/librespot/api-respot"
-	"github.com/arcspace/go-librespot/librespot/asset"
-	"github.com/arcspace/go-librespot/librespot/core/connection"
-	"github.com/arcspace/go-librespot/librespot/core/crypto"
-	"github.com/arcspace/go-librespot/librespot/mercury"
+	"github.com/git-amp/amp-sdk-go/amp"
+	"github.com/git-amp/librespot-go/Spotify"
+	respot "github.com/git-amp/librespot-go/librespot/api-respot"
+	"github.com/git-amp/librespot-go/librespot/asset"
+	"github.com/git-amp/librespot-go/librespot/core/connection"
+	"github.com/git-amp/librespot-go/librespot/core/crypto"
+	"github.com/git-amp/librespot-go/librespot/mercury"
 )
 
 func init() {
@@ -76,7 +76,7 @@ func (s *Session) Context() *respot.SessionContext {
 	return s.ctx
 }
 
-func (s *Session) PinTrack(trackID string, opts respot.PinOpts) (arc.MediaAsset, error) {
+func (s *Session) PinTrack(trackID string, opts respot.PinOpts) (amp.MediaAsset, error) {
 	asset, err := s.downloader.PinTrack(trackID)
 	if err != nil {
 		return nil, err

@@ -7,11 +7,11 @@ import (
 	"os"
 	"testing"
 
-	"github.com/arcspace/go-arc-sdk/stdlib/log"
-	"github.com/arcspace/go-arc-sdk/stdlib/task"
-	respot "github.com/arcspace/go-librespot/librespot/api-respot"
-	_ "github.com/arcspace/go-librespot/librespot/core" // bootstrapping
-	"github.com/arcspace/go-librespot/librespot/core/oauth"
+	"github.com/git-amp/amp-sdk-go/stdlib/log"
+	"github.com/git-amp/amp-sdk-go/stdlib/task"
+	respot "github.com/git-amp/librespot-go/librespot/api-respot"
+	_ "github.com/git-amp/librespot-go/librespot/core" // bootstrapping
+	"github.com/git-amp/librespot-go/librespot/core/oauth"
 )
 
 func TestDownload(t *testing.T) {

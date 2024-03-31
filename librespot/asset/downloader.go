@@ -10,19 +10,19 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/arcspace/go-arc-sdk/apis/arc"
-	"github.com/arcspace/go-arc-sdk/stdlib/task"
-	"github.com/arcspace/go-arc-sdk/stdlib/errors"
-	"github.com/arcspace/go-librespot/Spotify"
-	"github.com/arcspace/go-librespot/librespot/core/connection"
-	"github.com/arcspace/go-librespot/librespot/mercury"
+	"github.com/git-amp/amp-sdk-go/amp"
+	"github.com/git-amp/amp-sdk-go/stdlib/errors"
+	"github.com/git-amp/amp-sdk-go/stdlib/task"
+	"github.com/git-amp/librespot-go/Spotify"
+	"github.com/git-amp/librespot-go/librespot/core/connection"
+	"github.com/git-amp/librespot-go/librespot/mercury"
 )
 
 type Downloader interface {
 	HandleCmd(cmd byte, data []byte) error
 
 	// Blocks until the asset is ready to be accessed.
-	PinTrack(uri string) (arc.MediaAsset, error)
+	PinTrack(uri string) (amp.MediaAsset, error)
 }
 
 type downloader struct {
@@ -63,7 +63,7 @@ func NewDownloader(conn connection.PacketStream, client *mercury.Client) Downloa
 	return dl
 }
 
-func (dl *downloader) PinTrack(assetURI string) (arc.MediaAsset, error) {
+func (dl *downloader) PinTrack(assetURI string) (amp.MediaAsset, error) {
 	// Get the track metadata: it holds information about which files and encodings are available
 	assetID, track, err := dl.mercury.GetTrack(assetURI)
 	if err != nil {

@@ -1,11 +1,11 @@
-module github.com/arcspace/go-librespot
+module github.com/git-amp/librespot-go
 
 go 1.18
 
-// replace github.com/arcspace/go-arc-sdk => ../go-arc-sdk
+// replace github.com/arcspace/amp-sdk-go => ../amp-sdk-go
 
 require (
-	github.com/arcspace/go-arc-sdk v0.7.4
+	github.com/git-amp/amp-sdk-go v0.7.5
 	github.com/golang/protobuf v1.5.3
 	golang.org/x/crypto v0.16.0
 	google.golang.org/protobuf v1.31.0

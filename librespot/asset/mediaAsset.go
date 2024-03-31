@@ -7,10 +7,10 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/arcspace/go-arc-sdk/apis/arc"
-	"github.com/arcspace/go-arc-sdk/stdlib/task"
-	"github.com/arcspace/go-librespot/Spotify"
-	"github.com/arcspace/go-librespot/librespot/core/crypto"
+	"github.com/git-amp/amp-sdk-go/amp"
+	"github.com/git-amp/amp-sdk-go/stdlib/task"
+	"github.com/git-amp/librespot-go/Spotify"
+	"github.com/git-amp/librespot-go/librespot/core/crypto"
 )
 
 type ChunkIdx int32 // 0-based index of the chunk in the asset
@@ -418,7 +418,7 @@ func max(a, b int64) int64 {
 	return b
 }
 
-func (asset *mediaAsset) NewAssetReader() (arc.AssetReader, error) {
+func (asset *mediaAsset) NewAssetReader() (amp.AssetReader, error) {
 	reader := &assetReader{
 		asset:   asset,
 		readPos: 0,

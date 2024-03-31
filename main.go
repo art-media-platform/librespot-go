@@ -10,11 +10,11 @@ import (
 	"os"
 	"strings"
 
-	"github.com/arcspace/go-arc-sdk/stdlib/task"
-	"github.com/arcspace/go-librespot/Spotify"
-	respot "github.com/arcspace/go-librespot/librespot/api-respot"
-	_ "github.com/arcspace/go-librespot/librespot/core" // bootstrapping
-	"github.com/arcspace/go-librespot/librespot/core/oauth"
+	"github.com/git-amp/amp-sdk-go/stdlib/task"
+	"github.com/git-amp/librespot-go/Spotify"
+	respot "github.com/git-amp/librespot-go/librespot/api-respot"
+	_ "github.com/git-amp/librespot-go/librespot/core" // bootstrapping
+	"github.com/git-amp/librespot-go/librespot/core/oauth"
 )
 
 const (

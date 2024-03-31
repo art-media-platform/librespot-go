@@ -1,10 +1,10 @@
 package respot
 
 import (
-	"github.com/arcspace/go-arc-sdk/apis/arc"
-	"github.com/arcspace/go-arc-sdk/stdlib/task"
-	"github.com/arcspace/go-librespot/librespot/core/crypto"
-	"github.com/arcspace/go-librespot/librespot/mercury"
+	"github.com/git-amp/amp-sdk-go/amp"
+	"github.com/git-amp/amp-sdk-go/stdlib/task"
+	"github.com/git-amp/librespot-go/librespot/core/crypto"
+	"github.com/git-amp/librespot-go/librespot/mercury"
 )
 
 // Forward declared method to create a new Spotify session
@@ -52,7 +52,7 @@ type Session interface {
 	Mercury() *mercury.Client
 
 	// Initiates access ("pinning") with the given spotify track ID or URI
-	PinTrack(trackID string, opts PinOpts) (arc.MediaAsset, error)
+	PinTrack(trackID string, opts PinOpts) (amp.MediaAsset, error)
 }
 
 type PinOpts struct {
