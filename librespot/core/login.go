@@ -9,10 +9,10 @@ import (
 
 	"github.com/golang/protobuf/proto"
 
-	"github.com/git-amp/librespot-go/Spotify"
-	respot "github.com/git-amp/librespot-go/librespot/api-respot"
-	"github.com/git-amp/librespot-go/librespot/api-respot/blob"
-	"github.com/git-amp/librespot-go/librespot/core/connection"
+	"github.com/amp-space/amp-librespot-go/Spotify"
+	respot "github.com/amp-space/amp-librespot-go/librespot/api-respot"
+	"github.com/amp-space/amp-librespot-go/librespot/api-respot/blob"
+	"github.com/amp-space/amp-librespot-go/librespot/core/connection"
 )
 
 var Version = "master"

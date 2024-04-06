@@ -1,10 +1,10 @@
 package respot
 
 import (
-	"github.com/git-amp/amp-sdk-go/amp"
-	"github.com/git-amp/amp-sdk-go/stdlib/task"
-	"github.com/git-amp/librespot-go/librespot/core/crypto"
-	"github.com/git-amp/librespot-go/librespot/mercury"
+	"github.com/amp-space/amp-librespot-go/librespot/core/crypto"
+	"github.com/amp-space/amp-librespot-go/librespot/mercury"
+	"github.com/amp-space/amp-sdk-go/amp"
+	"github.com/amp-space/amp-sdk-go/stdlib/task"
 )
 
 // Forward declared method to create a new Spotify session
