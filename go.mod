@@ -1,13 +1,13 @@
-module github.com/git-amp/librespot-go
+module github.com/amp-space/amp-librespot-go
 
 go 1.18
 
-// replace github.com/arcspace/amp-sdk-go => ../amp-sdk-go
+// replace github.com/amp-space/amp-sdk-go => ../amp-sdk-go
 
 require (
-	github.com/git-amp/amp-sdk-go v0.7.5
+	github.com/amp-space/amp-sdk-go v0.7.6
 	github.com/golang/protobuf v1.5.4
-	golang.org/x/crypto v0.21.0
+	golang.org/x/crypto v0.22.0
 	google.golang.org/protobuf v1.33.0
 )
 
@@ -18,5 +18,5 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect; indirectgo mod tidy
 	github.com/rs/cors v1.10.1 // indirect
-	golang.org/x/sync v0.6.0 // indirect
+	golang.org/x/sync v0.7.0 // indirect
 )
