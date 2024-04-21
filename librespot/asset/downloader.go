@@ -253,7 +253,7 @@ func (dl *downloader) handlePacket(chunk *assetChunk, data []byte) {
 				break
 			}
 
-			ofs, _ := reader.Seek(0, io.SeekCurrent)
+			ofs, err := reader.Seek(0, io.SeekCurrent)
 			if err != nil {
 				break
 			}
