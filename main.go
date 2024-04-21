@@ -10,11 +10,11 @@ import (
 	"os"
 	"strings"
 
-	"github.com/amp-space/amp-librespot-go/Spotify"
-	respot "github.com/amp-space/amp-librespot-go/librespot/api-respot"
-	_ "github.com/amp-space/amp-librespot-go/librespot/core" // bootstrapping
-	"github.com/amp-space/amp-librespot-go/librespot/core/oauth"
-	"github.com/amp-space/amp-sdk-go/stdlib/task"
+	"github.com/amp-3d/amp-librespot-go/Spotify"
+	respot "github.com/amp-3d/amp-librespot-go/librespot/api-respot"
+	_ "github.com/amp-3d/amp-librespot-go/librespot/core" // bootstrapping
+	"github.com/amp-3d/amp-librespot-go/librespot/core/oauth"
+	"github.com/amp-3d/amp-sdk-go/stdlib/task"
 )
 
 const (
