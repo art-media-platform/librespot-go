@@ -1,7 +1,9 @@
 ## go-librespot
 
+[![Build Status](https://github.com/amp-3d/amp-librespot-go/workflows/go/badge.svg?branch=main)](https://github.com/amp-3d/amp-librespot-go/actions)
 
-This Go package is an adaption of [librespot-golang](https://github.com/librespot-org/librespot-golang), which itself is an adaption of a [librespot for Rust](https://github.com/librespot-org/librespot) and [librespot-java](https://github.com/librespot-org/librespot-java).  
+
+This Go package is an adaption of [librespot-golang](https://github.com/librespot-org/librespot-golang), which itself is an adaption of a [librespot for Rust](https://github.com/librespot-org/librespot) and [librespot-java](https://github.com/librespot-org/librespot-java).
 
 
 ### Why this fork?
