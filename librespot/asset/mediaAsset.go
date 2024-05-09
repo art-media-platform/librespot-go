@@ -9,7 +9,7 @@ import (
 
 	"github.com/amp-3d/amp-librespot-go/Spotify"
 	"github.com/amp-3d/amp-librespot-go/librespot/core/crypto"
-	"github.com/amp-3d/amp-sdk-go/amp"
+	"github.com/amp-3d/amp-sdk-go/stdlib/media"
 	"github.com/amp-3d/amp-sdk-go/stdlib/task"
 )
 
@@ -418,7 +418,7 @@ func max(a, b int64) int64 {
 	return b
 }
 
-func (asset *mediaAsset) NewAssetReader() (amp.AssetReader, error) {
+func (asset *mediaAsset) NewAssetReader() (media.AssetReader, error) {
 	reader := &assetReader{
 		asset:   asset,
 		readPos: 0,
@@ -556,14 +556,14 @@ func (r *assetReader) lockChunkAtOfs(rawOfs int64) (*assetChunk, error) {
 
 func (r *assetReader) lockChunk(chunk *assetChunk) error {
 	var err error
-	
+
 	// If this reader was closed, release the chunk we want to lock
 	if chunk != nil && r.closed.Load() {
 		chunk.numReaders.Add(-1)
 		chunk = nil
 		err = io.ErrClosedPipe
 	}
-	
+
 	// Release the prev chunk we locked if applicable.
 	prev := r.hotChunk.Swap(chunk)
 	if prev != nil {

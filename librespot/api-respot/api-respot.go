@@ -3,7 +3,7 @@ package respot
 import (
 	"github.com/amp-3d/amp-librespot-go/librespot/core/crypto"
 	"github.com/amp-3d/amp-librespot-go/librespot/mercury"
-	"github.com/amp-3d/amp-sdk-go/amp"
+	"github.com/amp-3d/amp-sdk-go/stdlib/media"
 	"github.com/amp-3d/amp-sdk-go/stdlib/task"
 )
 
@@ -52,7 +52,7 @@ type Session interface {
 	Mercury() *mercury.Client
 
 	// Initiates access ("pinning") with the given spotify track ID or URI
-	PinTrack(trackID string, opts PinOpts) (amp.MediaAsset, error)
+	PinTrack(trackID string, opts PinOpts) (media.Asset, error)
 }
 
 type PinOpts struct {

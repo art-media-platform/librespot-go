@@ -18,7 +18,7 @@ import (
 	"github.com/amp-3d/amp-librespot-go/librespot/core/connection"
 	"github.com/amp-3d/amp-librespot-go/librespot/core/crypto"
 	"github.com/amp-3d/amp-librespot-go/librespot/mercury"
-	"github.com/amp-3d/amp-sdk-go/amp"
+	"github.com/amp-3d/amp-sdk-go/stdlib/media"
 )
 
 func init() {
@@ -76,7 +76,7 @@ func (s *Session) Context() *respot.SessionContext {
 	return s.ctx
 }
 
-func (s *Session) PinTrack(trackID string, opts respot.PinOpts) (amp.MediaAsset, error) {
+func (s *Session) PinTrack(trackID string, opts respot.PinOpts) (media.Asset, error) {
 	asset, err := s.downloader.PinTrack(trackID)
 	if err != nil {
 		return nil, err

@@ -13,8 +13,8 @@ import (
 	"github.com/amp-3d/amp-librespot-go/Spotify"
 	"github.com/amp-3d/amp-librespot-go/librespot/core/connection"
 	"github.com/amp-3d/amp-librespot-go/librespot/mercury"
-	"github.com/amp-3d/amp-sdk-go/amp"
 	"github.com/amp-3d/amp-sdk-go/stdlib/errors"
+	"github.com/amp-3d/amp-sdk-go/stdlib/media"
 	"github.com/amp-3d/amp-sdk-go/stdlib/task"
 )
 
@@ -22,7 +22,7 @@ type Downloader interface {
 	HandleCmd(cmd byte, data []byte) error
 
 	// Blocks until the asset is ready to be accessed.
-	PinTrack(uri string) (amp.MediaAsset, error)
+	PinTrack(uri string) (media.Asset, error)
 }
 
 type downloader struct {
@@ -63,7 +63,7 @@ func NewDownloader(conn connection.PacketStream, client *mercury.Client) Downloa
 	return dl
 }
 
-func (dl *downloader) PinTrack(assetURI string) (amp.MediaAsset, error) {
+func (dl *downloader) PinTrack(assetURI string) (media.Asset, error) {
 	// Get the track metadata: it holds information about which files and encodings are available
 	assetID, track, err := dl.mercury.GetTrack(assetURI)
 	if err != nil {
