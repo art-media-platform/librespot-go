@@ -90,12 +90,12 @@ func (dl *downloader) PinTrack(assetURI string) (media.Asset, error) {
 
 	switch {
 	case strings.HasSuffix(ext, ".mp3"):
-		asset.mediaType = "audio/mpeg"
+		asset.contentType = "audio/mpeg"
 	case strings.HasSuffix(ext, ".ogg"):
-		asset.mediaType = "audio/ogg"
+		asset.contentType = "audio/ogg"
 		asset.assetByteOfs = SPOTIFY_OGG_HEADER_SIZE
 	case strings.HasSuffix(ext, ".aac"):
-		asset.mediaType = "audio/aac"
+		asset.contentType = "audio/aac"
 	}
 
 	asset.label = fmt.Sprintf("%s - %s (%s)%s", asset.track.GetArtist()[0].GetName(), asset.track.GetName(), assetID, ext)

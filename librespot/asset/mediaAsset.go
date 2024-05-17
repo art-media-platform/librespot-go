@@ -57,7 +57,7 @@ type mediaAsset struct {
 	task.Context
 
 	label        string
-	mediaType    string
+	contentType  string
 	assetByteSz  int64 // contiguous chunk byte span; 0 denotes chunk #0 is needed
 	assetByteOfs int64 // offset into chunk #0 where the asset data starts
 	finalChunk   ChunkIdx
@@ -125,8 +125,8 @@ func (ma *mediaAsset) Label() string {
 	return ma.label
 }
 
-func (ma *mediaAsset) MediaType() string {
-	return ma.mediaType
+func (ma *mediaAsset) ContentType() string {
+	return ma.contentType
 }
 
 // pre: ma.chunksMu is locked
