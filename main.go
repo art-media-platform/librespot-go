@@ -5,10 +5,11 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"strings"
+
+	"io"
 
 	"github.com/amp-3d/amp-librespot-go/Spotify"
 	respot "github.com/amp-3d/amp-librespot-go/librespot/api-respot"
@@ -56,7 +57,7 @@ func mainStart() error {
 
 		// Authenticate reusing an existing blob
 		if len(*blobPath) > 0 {
-			login.AuthData, err = ioutil.ReadFile(*blobPath)
+			login.AuthData, err = os.ReadFile(*blobPath)
 			if err != nil {
 				return fmt.Errorf("unable to read auth blob from %s: %s", *blobPath, err)
 			}
@@ -300,12 +301,12 @@ func funcSave(sess respot.Session, trackID string) error {
 	}
 	defer r.Close()
 
-	buffer, err := ioutil.ReadAll(r)
+	buffer, err := io.ReadAll(io.Reader(r))
 	if err != nil {
 		return err
 	}
 
-	err = ioutil.WriteFile(asset.Label(), buffer, os.ModePerm)
+	err = os.WriteFile(asset.Label(), buffer, os.ModePerm)
 	if err != nil {
 		return fmt.Errorf("failed to write file: %s", err)
 	}
