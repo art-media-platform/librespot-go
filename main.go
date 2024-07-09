@@ -41,7 +41,9 @@ func mainStart() error {
 
 	ctx := respot.DefaultSessionContext(*devicename)
 	ctx.Context, _ = task.Start(&task.Task{
-		Label: "main",
+		Info: task.Info{
+			Label: "main",
+		},
 	})
 
 	sess, err := respot.StartNewSession(ctx)

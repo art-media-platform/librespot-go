@@ -18,7 +18,9 @@ func TestDownload(t *testing.T) {
 	log.UseStockFormatter(24, true)
 
 	host, _ := task.Start(&task.Task{
-		Label: "download-test",
+		Info: task.Info{
+			Label: "download-test",
+		},
 		OnClosed: func() {
 			fmt.Println("download-test shutdown complete")
 		},
@@ -38,14 +40,14 @@ func TestDownload(t *testing.T) {
 
 	go func() {
 		<-gracefulStop
-		host.Info(2, "<-gracefulStop")
+		host.Log().Info(2, "<-gracefulStop")
 		//sess.Mercury().Close()
 		host.Close()
 	}()
 
 	go func() {
 		<-immediateStop
-		host.Info(2, "<-immediateStop")
+		host.Log().Info(2, "<-immediateStop")
 		host.Close()
 	}()
 

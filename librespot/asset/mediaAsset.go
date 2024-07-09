@@ -219,7 +219,7 @@ func (ma *mediaAsset) runLoop() {
 				ma.chunksMu.Lock()
 				ma.fetching -= 1
 				if kDebug {
-					ma.Context.Infof(2, "RECV chunk %d/%d/%d", chunk.Idx, ma.fetching, ma.finalChunk)
+					ma.Context.Log().Infof(2, "RECV chunk %d/%d/%d", chunk.Idx, ma.fetching, ma.finalChunk)
 				}
 				{
 					// The size should only change when the first chunk arrives
@@ -271,7 +271,7 @@ func (ma *mediaAsset) requestChunkIfNeeded(needIdx ChunkIdx) {
 	}
 
 	if kDebug {
-		ma.Infof(2, "requestChunkIfNeeded: needIdx: %d, fetchIdx: %d/%d/%d", needIdx, fetchIdx, ma.fetching, ma.finalChunk)
+		ma.Log().Infof(2, "requestChunkIfNeeded: needIdx: %d, fetchIdx: %d/%d/%d", needIdx, fetchIdx, ma.fetching, ma.finalChunk)
 	}
 
 	if fetchIdx >= 0 {
@@ -463,7 +463,7 @@ func (r *assetReader) Read(buf []byte) (int, error) {
 
 	if kDebug {
 		pos := r.readPos - r.asset.assetByteOfs
-		r.asset.Infof(2, "READ REQ %7d bytes, @%7d", bytesRemain, pos)
+		r.asset.Log().Infof(2, "READ REQ %7d bytes, @%7d", bytesRemain, pos)
 	}
 
 	for bytesRemain > 0 {
@@ -492,7 +492,7 @@ func (r *assetReader) Read(buf []byte) (int, error) {
 
 	if kDebug {
 		pos := r.readPos - r.asset.assetByteOfs
-		r.asset.Infof(2, " <--- COMPLETE %d bytes read, @%7d\n", bytesRead, pos)
+		r.asset.Log().Infof(2, " <--- COMPLETE %d bytes read, @%7d\n", bytesRead, pos)
 	}
 
 	return bytesRead, nil
@@ -514,7 +514,7 @@ func (r *assetReader) Seek(offset int64, whence int) (int64, error) {
 
 	pos := r.readPos - r.asset.assetByteOfs
 	if kDebug {
-		r.asset.Context.Infof(2, "SEEK  %12d", pos)
+		r.asset.Context.Log().Infof(2, "SEEK  %12d", pos)
 	}
 	return pos, nil
 }
@@ -576,7 +576,7 @@ func (r *assetReader) Close() error {
 	if r.closed.CompareAndSwap(false, true) {
 		r.lockChunk(nil)
 		if kDebug {
-			r.asset.Infof(2, "CLOSED")
+			r.asset.Log().Infof(2, "CLOSED")
 		}
 	}
 	return nil
