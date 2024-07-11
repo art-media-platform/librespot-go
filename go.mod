@@ -5,10 +5,10 @@ go 1.18
 // replace github.com/amp-3d/amp-sdk-go => ../amp-sdk-go
 
 require (
-	github.com/amp-3d/amp-sdk-go v0.7.7-0.20240526024411-e0ab66f80dab
+	github.com/amp-3d/amp-sdk-go v0.8.0
 	github.com/golang/protobuf v1.5.4
-	golang.org/x/crypto v0.23.0
-	google.golang.org/protobuf v1.34.1
+	golang.org/x/crypto v0.25.0
+	google.golang.org/protobuf v1.34.2
 )
 
 require (
