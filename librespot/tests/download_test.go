@@ -7,11 +7,11 @@ import (
 	"os"
 	"testing"
 
-	respot "github.com/amp-3d/amp-librespot-go/librespot/api-respot"
-	_ "github.com/amp-3d/amp-librespot-go/librespot/core" // bootstrapping
-	"github.com/amp-3d/amp-librespot-go/librespot/core/oauth"
-	"github.com/amp-3d/amp-sdk-go/stdlib/log"
-	"github.com/amp-3d/amp-sdk-go/stdlib/task"
+	respot "github.com/art-media-platform/amp-librespot-go/librespot/api-respot"
+	_ "github.com/art-media-platform/amp-librespot-go/librespot/core" // bootstrapping
+	"github.com/art-media-platform/amp-librespot-go/librespot/core/oauth"
+	"github.com/art-media-platform/amp-sdk-go/stdlib/log"
+	"github.com/art-media-platform/amp-sdk-go/stdlib/task"
 )
 
 func TestDownload(t *testing.T) {

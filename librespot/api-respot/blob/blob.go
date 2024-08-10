@@ -16,7 +16,7 @@ import (
 
 	"golang.org/x/crypto/pbkdf2"
 
-	"github.com/amp-3d/amp-librespot-go/librespot/core/crypto"
+	"github.com/art-media-platform/amp-librespot-go/librespot/core/crypto"
 )
 
 // BlobInfo is the structure holding authentication blob data. The blob is an encoded/encrypted byte array (encoded

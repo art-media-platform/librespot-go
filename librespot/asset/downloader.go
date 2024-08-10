@@ -10,12 +10,12 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/amp-3d/amp-librespot-go/Spotify"
-	"github.com/amp-3d/amp-librespot-go/librespot/core/connection"
-	"github.com/amp-3d/amp-librespot-go/librespot/mercury"
-	"github.com/amp-3d/amp-sdk-go/stdlib/errors"
-	"github.com/amp-3d/amp-sdk-go/stdlib/media"
-	"github.com/amp-3d/amp-sdk-go/stdlib/task"
+	"github.com/art-media-platform/amp-librespot-go/Spotify"
+	"github.com/art-media-platform/amp-librespot-go/librespot/core/connection"
+	"github.com/art-media-platform/amp-librespot-go/librespot/mercury"
+	"github.com/art-media-platform/amp-sdk-go/stdlib/errors"
+	"github.com/art-media-platform/amp-sdk-go/stdlib/media"
+	"github.com/art-media-platform/amp-sdk-go/stdlib/task"
 )
 
 type Downloader interface {

@@ -1,8 +1,8 @@
-module github.com/amp-3d/amp-librespot-go
+module github.com/art-media-platform/amp-librespot-go
 
-go 1.18
+go 1.22
 
-// replace github.com/amp-3d/amp-sdk-go => ../amp-sdk-go
+// replace github.com/art-media-platform/amp-sdk-go => ../amp-sdk-go
 
 require (
 	github.com/amp-3d/amp-sdk-go v0.8.0

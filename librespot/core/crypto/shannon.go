@@ -7,7 +7,7 @@ import (
 	"io"
 	"sync"
 
-	"github.com/amp-3d/amp-librespot-go/librespot/core/connection"
+	"github.com/art-media-platform/amp-librespot-go/librespot/core/connection"
 )
 
 type shannonStream struct {

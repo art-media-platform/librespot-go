@@ -8,7 +8,7 @@ import (
 	"github.com/golang/protobuf/proto"
 	//"google.golang.org/protobuf/proto"
 
-	"github.com/amp-3d/amp-librespot-go/Spotify"
+	"github.com/art-media-platform/amp-librespot-go/Spotify"
 )
 
 func (m *Client) mercuryGet(url string) ([]byte, error) {
