@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"testing"
 
@@ -77,12 +77,12 @@ func assetTests(sess respot.Session) error {
 		return err
 	}
 
-	buffer, err := ioutil.ReadAll(assetReader)
+	buffer, err := io.ReadAll(assetReader)
 	if err != nil {
 		return err
 	}
 
-	err = ioutil.WriteFile(asset.Label(), buffer, os.ModePerm)
+	err = os.WriteFile(asset.Label(), buffer, os.ModePerm)
 	if err != nil {
 		return err
 	}
