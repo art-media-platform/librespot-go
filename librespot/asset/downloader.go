@@ -23,6 +23,7 @@ type Downloader interface {
 
 	// Blocks until the asset is ready to be accessed.
 	PinTrack(uri string) (media.Asset, error)
+	PinTrackFormat(string, []Spotify.AudioFile_Format) (media.Asset, error)
 }
 
 type downloader struct {
@@ -30,12 +31,13 @@ type downloader struct {
 	stream  connection.PacketStream
 	mercury *mercury.Client
 
-	chMu        sync.Mutex
-	chMap       map[uint16]*assetChunk
-	seqChans    sync.Map // TODO: make this less gross
-	nextChan    uint16
-	audioFormat Spotify.AudioFile_Format
+	chMu     sync.Mutex
+	chMap    map[uint16]*assetChunk
+	seqChans sync.Map // TODO: make this less gross
+	nextChan uint16
 }
+
+var defaultPreferredFormats = []Spotify.AudioFile_Format{Spotify.AudioFile_OGG_VORBIS_160}
 
 var extMap = map[Spotify.AudioFile_Format]string{
 	Spotify.AudioFile_OGG_VORBIS_96:  ".96.ogg",
@@ -52,18 +54,21 @@ var extMap = map[Spotify.AudioFile_Format]string{
 
 func NewDownloader(conn connection.PacketStream, client *mercury.Client) Downloader {
 	dl := &downloader{
-		stream:      conn,
-		mercury:     client,
-		chMap:       map[uint16]*assetChunk{},
-		seqChans:    sync.Map{},
-		chMu:        sync.Mutex{},
-		nextChan:    0,
-		audioFormat: Spotify.AudioFile_OGG_VORBIS_160,
+		stream:   conn,
+		mercury:  client,
+		chMap:    map[uint16]*assetChunk{},
+		seqChans: sync.Map{},
+		chMu:     sync.Mutex{},
+		nextChan: 0,
 	}
 	return dl
 }
 
 func (dl *downloader) PinTrack(assetURI string) (media.Asset, error) {
+	return dl.PinTrackFormat(assetURI, defaultPreferredFormats)
+}
+
+func (dl *downloader) PinTrackFormat(assetURI string, formats []Spotify.AudioFile_Format) (media.Asset, error) {
 	// Get the track metadata: it holds information about which files and encodings are available
 	assetID, track, err := dl.mercury.GetTrack(assetURI)
 	if err != nil {
@@ -74,9 +79,9 @@ func (dl *downloader) PinTrack(assetURI string) (media.Asset, error) {
 	// Stranger still, AAC_48 returns a key but the data appears to be corrupt.
 	// Posts such as https://github.com/librespot-org/librespot-golang/issues/28 suggest it has been broken for a while.
 	// Unknown: does AAC work on https://github.com/librespot-org/librespot
-	trackFile := dl.chooseBestFile(track)
+	trackFile := chooseBestFile(track, formats)
 	if trackFile == nil {
-		err = fmt.Errorf("no file found for format %v", dl.audioFormat)
+		err = fmt.Errorf("no file found for format %v", formats)
 		return nil, err
 	}
 
@@ -108,17 +113,26 @@ func (dl *downloader) PinTrack(assetURI string) (media.Asset, error) {
 	return asset, err
 }
 
-func (dl *downloader) chooseBestFile(track *Spotify.Track) *Spotify.AudioFile {
-	for _, file := range track.File {
-		if file.GetFormat() == dl.audioFormat {
+// finds the best format by priority in the format list
+func chooseBestFile(track *Spotify.Track, formats []Spotify.AudioFile_Format) *Spotify.AudioFile {
+	for _, format := range formats {
+		if file := getFileByFormat(track.File, format); file != nil {
 			return file
 		}
-	}
-	for _, alt := range track.Alternative {
-		for _, file := range alt.File {
-			if file.GetFormat() == dl.audioFormat {
+
+		for _, alt := range track.Alternative {
+			if file := getFileByFormat(alt.File, format); file != nil {
 				return file
 			}
+		}
+	}
+	return nil
+}
+
+func getFileByFormat(files []*Spotify.AudioFile, format Spotify.AudioFile_Format) *Spotify.AudioFile {
+	for _, file := range files {
+		if file.GetFormat() == format {
+			return file
 		}
 	}
 	return nil
