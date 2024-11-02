@@ -3,8 +3,8 @@ package respot
 import (
 	"github.com/art-media-platform/amp-librespot-go/librespot/core/crypto"
 	"github.com/art-media-platform/amp-librespot-go/librespot/mercury"
-	"github.com/art-media-platform/amp-sdk-go/stdlib/media"
-	"github.com/art-media-platform/amp-sdk-go/stdlib/task"
+	"github.com/art-media-platform/amp.SDK/stdlib/media"
+	"github.com/art-media-platform/amp.SDK/stdlib/task"
 )
 
 // Forward declared method to create a new Spotify session

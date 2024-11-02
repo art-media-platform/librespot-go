@@ -18,7 +18,7 @@ import (
 	"github.com/art-media-platform/amp-librespot-go/librespot/core/connection"
 	"github.com/art-media-platform/amp-librespot-go/librespot/core/crypto"
 	"github.com/art-media-platform/amp-librespot-go/librespot/mercury"
-	"github.com/art-media-platform/amp-sdk-go/stdlib/media"
+	"github.com/art-media-platform/amp.SDK/stdlib/media"
 )
 
 func init() {

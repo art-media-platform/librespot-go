@@ -15,7 +15,7 @@ import (
 	respot "github.com/art-media-platform/amp-librespot-go/librespot/api-respot"
 	_ "github.com/art-media-platform/amp-librespot-go/librespot/core" // bootstrapping
 	"github.com/art-media-platform/amp-librespot-go/librespot/core/oauth"
-	"github.com/art-media-platform/amp-sdk-go/stdlib/task"
+	"github.com/art-media-platform/amp.SDK/stdlib/task"
 )
 
 const (
