@@ -22,7 +22,7 @@ type Downloader interface {
 	HandleCmd(cmd byte, data []byte) error
 
 	// Blocks until the asset is ready to be accessed.
-	PinTrack(uri string) (media.Asset, error)
+	PinTrack(uri string, file *Spotify.AudioFile) (media.Asset, error)
 }
 
 type downloader struct {
@@ -30,11 +30,10 @@ type downloader struct {
 	stream  connection.PacketStream
 	mercury *mercury.Client
 
-	chMu        sync.Mutex
-	chMap       map[uint16]*assetChunk
-	seqChans    sync.Map // TODO: make this less gross
-	nextChan    uint16
-	audioFormat Spotify.AudioFile_Format
+	chMu     sync.Mutex
+	chMap    map[uint16]*assetChunk
+	seqChans sync.Map // TODO: make this less gross
+	nextChan uint16
 }
 
 var extMap = map[Spotify.AudioFile_Format]string{
@@ -52,18 +51,17 @@ var extMap = map[Spotify.AudioFile_Format]string{
 
 func NewDownloader(conn connection.PacketStream, client *mercury.Client) Downloader {
 	dl := &downloader{
-		stream:      conn,
-		mercury:     client,
-		chMap:       map[uint16]*assetChunk{},
-		seqChans:    sync.Map{},
-		chMu:        sync.Mutex{},
-		nextChan:    0,
-		audioFormat: Spotify.AudioFile_OGG_VORBIS_160,
+		stream:   conn,
+		mercury:  client,
+		chMap:    map[uint16]*assetChunk{},
+		seqChans: sync.Map{},
+		chMu:     sync.Mutex{},
+		nextChan: 0,
 	}
 	return dl
 }
 
-func (dl *downloader) PinTrack(assetURI string) (media.Asset, error) {
+func (dl *downloader) PinTrack(assetURI string, trackFile *Spotify.AudioFile) (media.Asset, error) {
 	// Get the track metadata: it holds information about which files and encodings are available
 	assetID, track, err := dl.mercury.GetTrack(assetURI)
 	if err != nil {
@@ -74,10 +72,12 @@ func (dl *downloader) PinTrack(assetURI string) (media.Asset, error) {
 	// Stranger still, AAC_48 returns a key but the data appears to be corrupt.
 	// Posts such as https://github.com/librespot-org/librespot-golang/issues/28 suggest it has been broken for a while.
 	// Unknown: does AAC work on https://github.com/librespot-org/librespot
-	trackFile := dl.chooseBestFile(track)
 	if trackFile == nil {
-		err = fmt.Errorf("no file found for format %v", dl.audioFormat)
-		return nil, err
+		trackFile = dl.chooseBestFile(track, Spotify.AudioFile_OGG_VORBIS_160)
+		if trackFile == nil {
+			err = fmt.Errorf("no file found for format %v", Spotify.AudioFile_OGG_VORBIS_160)
+			return nil, err
+		}
 	}
 
 	asset := newMediaAsset(dl, track)
@@ -108,15 +108,15 @@ func (dl *downloader) PinTrack(assetURI string) (media.Asset, error) {
 	return asset, err
 }
 
-func (dl *downloader) chooseBestFile(track *Spotify.Track) *Spotify.AudioFile {
+func (dl *downloader) chooseBestFile(track *Spotify.Track, format Spotify.AudioFile_Format) *Spotify.AudioFile {
 	for _, file := range track.File {
-		if file.GetFormat() == dl.audioFormat {
+		if file.GetFormat() == format {
 			return file
 		}
 	}
 	for _, alt := range track.Alternative {
 		for _, file := range alt.File {
-			if file.GetFormat() == dl.audioFormat {
+			if file.GetFormat() == format {
 				return file
 			}
 		}
@@ -150,7 +150,6 @@ func (dl *downloader) loadTrackKey(asset *mediaAsset) error {
 
 // opens a new data channel to recv the requested chunk
 func (dl *downloader) RequestChunk(chunkIdx ChunkIdx, asset *mediaAsset) (*assetChunk, error) {
-
 	dl.chMu.Lock()
 	chunk := &assetChunk{
 		chID:   dl.nextChan,
@@ -241,7 +240,6 @@ const (
 )
 
 func (dl *downloader) handlePacket(chunk *assetChunk, data []byte) {
-
 	if !chunk.gotHeader {
 		reader := bytes.NewReader(data)
 		//bytesRead := uint16(0)
@@ -272,7 +270,6 @@ func (dl *downloader) handlePacket(chunk *assetChunk, data []byte) {
 
 		chunk.gotHeader = true
 	} else {
-
 		// is there a more robust way to signal completion?
 		if len(data) == 0 {
 			chunk.status = chunkReadyToDecrypt
@@ -284,7 +281,5 @@ func (dl *downloader) handlePacket(chunk *assetChunk, data []byte) {
 		} else {
 			chunk.Data = append(chunk.Data, data...)
 		}
-
 	}
-
 }

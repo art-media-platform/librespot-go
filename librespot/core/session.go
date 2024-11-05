@@ -77,7 +77,7 @@ func (s *Session) Context() *respot.SessionContext {
 }
 
 func (s *Session) PinTrack(trackID string, opts respot.PinOpts) (media.Asset, error) {
-	asset, err := s.downloader.PinTrack(trackID)
+	asset, err := s.downloader.PinTrack(trackID, opts.AudioFile)
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +91,6 @@ func (s *Session) PinTrack(trackID string, opts respot.PinOpts) (media.Asset, er
 }
 
 func (s *Session) StartConnection() error {
-
 	apUrl, err := respot.APResolve()
 	if err != nil {
 		return fmt.Errorf("could not get ap url: %+v", err)
@@ -249,7 +248,6 @@ func (s *Session) handle(cmd uint8, data []byte) error {
 		if err != nil {
 			return fmt.Errorf("error handling ping: %+v", err)
 		}
-
 	case cmd == connection.PacketPongAck:
 		// Pong reply, ignore
 
@@ -258,17 +256,14 @@ func (s *Session) handle(cmd uint8, data []byte) error {
 		if err := s.downloader.HandleCmd(cmd, data); err != nil {
 			return fmt.Errorf("could not handle cmd: %+v", err)
 		}
-
 	case cmd == connection.PacketCountryCode:
 		s.ctx.Info.Country = string(data)
-
 	case 0xb2 <= cmd && cmd <= 0xb6:
 		// Mercury responses
 		err := s.mercury.Handle(cmd, bytes.NewReader(data))
 		if err != nil {
 			return fmt.Errorf("error handling 0xB?: %+v", err)
 		}
-
 	case cmd == connection.PacketSecretBlock:
 		// Old RSA public key
 

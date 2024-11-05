@@ -1,6 +1,7 @@
 package respot
 
 import (
+	"github.com/art-media-platform/amp-librespot-go/Spotify"
 	"github.com/art-media-platform/amp-librespot-go/librespot/core/crypto"
 	"github.com/art-media-platform/amp-librespot-go/librespot/mercury"
 	"github.com/art-media-platform/amp.SDK/stdlib/media"
@@ -56,8 +57,9 @@ type Session interface {
 }
 
 type PinOpts struct {
-
 	// If set, MediaAsset.OnStart(Ctx().Context) will be called on the returned MediaAsset.
 	// This is for convenience but not desirable when the asset is in a time-to-live cache, for example.
 	StartInternally bool
+
+	AudioFile *Spotify.AudioFile
 }
