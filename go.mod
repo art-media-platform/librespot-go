@@ -5,10 +5,10 @@ go 1.22
 // replace github.com/art-media-platform/amp.SDK => ../amp.SDK
 
 require (
-	github.com/art-media-platform/amp.SDK v0.8.4
+	github.com/art-media-platform/amp.SDK v0.8.5
 	github.com/golang/protobuf v1.5.4
-	golang.org/x/crypto v0.26.0
-	google.golang.org/protobuf v1.34.2
+	golang.org/x/crypto v0.28.0
+	google.golang.org/protobuf v1.35.1
 )
 
 require (
