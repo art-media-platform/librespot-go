@@ -57,7 +57,7 @@ type Session interface {
 
 type PinOpts struct {
 
-	// If set, MediaAsset.OnStart(Ctx().Context) will be called on the returned MediaAsset.
+	// If set, media.Asset.OnStart(Ctx().Context) will be called on the returned media.Asset.
 	// This is for convenience but not desirable when the asset is in a time-to-live cache, for example.
 	StartInternally bool
 }
