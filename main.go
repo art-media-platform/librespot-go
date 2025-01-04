@@ -5,11 +5,10 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"strings"
-
-	"io"
 
 	"github.com/art-media-platform/amp-librespot-go/Spotify"
 	respot "github.com/art-media-platform/amp-librespot-go/librespot/api-respot"
