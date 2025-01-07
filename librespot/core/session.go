@@ -77,7 +77,7 @@ func (s *Session) Context() *respot.SessionContext {
 }
 
 func (s *Session) PinTrack(trackID string, opts respot.PinOpts) (media.Asset, error) {
-	asset, err := s.downloader.PinTrack(trackID)
+	asset, err := s.downloader.PinTrack(trackID, &opts.Format)
 	if err != nil {
 		return nil, err
 	}

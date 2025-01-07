@@ -1,13 +1,14 @@
 package respot
 
 import (
+	"github.com/art-media-platform/amp-librespot-go/librespot/asset"
 	"github.com/art-media-platform/amp-librespot-go/librespot/core/crypto"
 	"github.com/art-media-platform/amp-librespot-go/librespot/mercury"
 	"github.com/art-media-platform/amp.SDK/stdlib/media"
 	"github.com/art-media-platform/amp.SDK/stdlib/task"
 )
 
-// Forward declared method to create a new Spotify session
+// Forward declartion to create a respot.Session (a Spotify session).
 var StartNewSession func(ctx *SessionContext) (Session, error)
 
 func DefaultSessionContext(deviceLabel string) *SessionContext {
@@ -51,7 +52,8 @@ type Session interface {
 	Search(query string, limit int) (*mercury.SearchResponse, error)
 	Mercury() *mercury.Client
 
-	// Initiates access ("pinning") with the given spotify track ID or URI
+	// Initiates downloading ("pinning") with the given spotify track ID or URI.
+	// The track data is accessible via media.Asset, supporting io.ReadSeekCloser and is essential for streaming or serving.
 	PinTrack(trackID string, opts PinOpts) (media.Asset, error)
 }
 
@@ -60,4 +62,7 @@ type PinOpts struct {
 	// If set, media.Asset.OnStart(Ctx().Context) will be called on the returned media.Asset.
 	// This is for convenience but not desirable when the asset is in a time-to-live cache, for example.
 	StartInternally bool
+
+	// Expresses preferences for the requested asset's codec and format.
+	Format asset.AssetFormat
 }
