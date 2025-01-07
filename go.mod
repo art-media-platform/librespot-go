@@ -1,4 +1,4 @@
-module github.com/art-media-platform/amp-librespot-go
+module github.com/art-media-platform/librespot-go
 
 go 1.22
 

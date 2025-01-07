@@ -12,13 +12,13 @@ import (
 
 	"github.com/golang/protobuf/proto"
 
-	"github.com/art-media-platform/amp-librespot-go/Spotify"
-	respot "github.com/art-media-platform/amp-librespot-go/librespot/api-respot"
-	"github.com/art-media-platform/amp-librespot-go/librespot/asset"
-	"github.com/art-media-platform/amp-librespot-go/librespot/core/connection"
-	"github.com/art-media-platform/amp-librespot-go/librespot/core/crypto"
-	"github.com/art-media-platform/amp-librespot-go/librespot/mercury"
 	"github.com/art-media-platform/amp.SDK/stdlib/media"
+	"github.com/art-media-platform/librespot-go/Spotify"
+	respot "github.com/art-media-platform/librespot-go/librespot/api-respot"
+	"github.com/art-media-platform/librespot-go/librespot/asset"
+	"github.com/art-media-platform/librespot-go/librespot/core/connection"
+	"github.com/art-media-platform/librespot-go/librespot/core/crypto"
+	"github.com/art-media-platform/librespot-go/librespot/mercury"
 )
 
 func init() {

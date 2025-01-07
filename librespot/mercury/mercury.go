@@ -9,8 +9,8 @@ import (
 
 	"github.com/golang/protobuf/proto"
 
-	"github.com/art-media-platform/amp-librespot-go/Spotify"
-	"github.com/art-media-platform/amp-librespot-go/librespot/core/connection"
+	"github.com/art-media-platform/librespot-go/Spotify"
+	"github.com/art-media-platform/librespot-go/librespot/core/connection"
 )
 
 // Mercury is the protocol implementation for Spotify Connect playback control and metadata fetching. It works as a
@@ -229,7 +229,7 @@ func encodeRequest(seq []byte, req Request) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func handleHead(reader io.Reader) ([]byte, uint8, uint16, error){
+func handleHead(reader io.Reader) ([]byte, uint8, uint16, error) {
 	var seqLength uint16
 	err := binary.Read(reader, binary.BigEndian, &seqLength)
 	if err != nil {

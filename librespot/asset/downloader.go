@@ -10,12 +10,12 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/art-media-platform/amp-librespot-go/Spotify"
-	"github.com/art-media-platform/amp-librespot-go/librespot/core/connection"
-	"github.com/art-media-platform/amp-librespot-go/librespot/mercury"
 	"github.com/art-media-platform/amp.SDK/stdlib/errors"
 	"github.com/art-media-platform/amp.SDK/stdlib/media"
 	"github.com/art-media-platform/amp.SDK/stdlib/task"
+	"github.com/art-media-platform/librespot-go/Spotify"
+	"github.com/art-media-platform/librespot-go/librespot/core/connection"
+	"github.com/art-media-platform/librespot-go/librespot/mercury"
 )
 
 // Expresses preferences for the asset data in order of preference.

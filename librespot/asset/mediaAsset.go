@@ -7,10 +7,10 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/art-media-platform/amp-librespot-go/Spotify"
-	"github.com/art-media-platform/amp-librespot-go/librespot/core/crypto"
 	"github.com/art-media-platform/amp.SDK/stdlib/media"
 	"github.com/art-media-platform/amp.SDK/stdlib/task"
+	"github.com/art-media-platform/librespot-go/Spotify"
+	"github.com/art-media-platform/librespot-go/librespot/core/crypto"
 )
 
 type ChunkIdx int32 // 0-based index of the chunk in the asset

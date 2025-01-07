@@ -1,6 +1,6 @@
 syntax = "proto2";
 
-option go_package = "github.com/art-media-platform/amp-librespot-go/Spotify";
+option go_package = "github.com/art-media-platform/librespot-go/Spotify";
 
 package Spotify;
 

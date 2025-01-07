@@ -8,13 +8,13 @@ import (
 	"github.com/golang/protobuf/proto"
 	//"google.golang.org/protobuf/proto"
 
-	"github.com/art-media-platform/amp-librespot-go/Spotify"
+	"github.com/art-media-platform/librespot-go/Spotify"
 )
 
 func (m *Client) mercuryGet(url string) ([]byte, error) {
 	done := make(chan []byte)
 	errs := make(chan error)
-	go func(){
+	go func() {
 		err := m.Request(Request{
 			Method:  "GET",
 			Uri:     url,
@@ -27,8 +27,9 @@ func (m *Client) mercuryGet(url string) ([]byte, error) {
 		}
 	}()
 	select {
-		case err := <-errs: return nil, err
-		default:
+	case err := <-errs:
+		return nil, err
+	default:
 	}
 	result := <-done
 	return result, nil
@@ -60,7 +61,7 @@ func (m *Client) GetRootPlaylist(username string) (*Spotify.SelectedListContent,
 func (m *Client) GetPlaylist(id string) (*Spotify.SelectedListContent, error) {
 	//uri := fmt.Sprintf("hm://playlist/%s", id)
 	uri := fmt.Sprintf("hm://playlist/v2/playlist/%s", id)
-	
+
 	result := &Spotify.SelectedListContent{}
 	err := m.mercuryGetProto(uri, result)
 	return result, err
@@ -113,7 +114,7 @@ func (m *Client) GetTrack(uri string) (trackID string, track *Spotify.Track, err
 	return
 }
 
-func (m *Client) GetArtist(uri string) (artistID string, artist*Spotify.Artist, err error) {
+func (m *Client) GetArtist(uri string) (artistID string, artist *Spotify.Artist, err error) {
 	var hexID string
 	artistID, hexID, err = Spotify.ExtractAssetID(uri)
 	if err != nil {
@@ -131,9 +132,9 @@ func (m *Client) GetAlbum(uri string) (albumID string, album *Spotify.Album, err
 	if err != nil {
 		return
 	}
-	
+
 	url := "hm://metadata/4/album/" + hexID
-	album =  &Spotify.Album{}
+	album = &Spotify.Album{}
 	err = m.mercuryGetProto(url, album)
 	return
 }

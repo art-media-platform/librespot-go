@@ -1,11 +1,11 @@
 package respot
 
 import (
-	"github.com/art-media-platform/amp-librespot-go/librespot/asset"
-	"github.com/art-media-platform/amp-librespot-go/librespot/core/crypto"
-	"github.com/art-media-platform/amp-librespot-go/librespot/mercury"
 	"github.com/art-media-platform/amp.SDK/stdlib/media"
 	"github.com/art-media-platform/amp.SDK/stdlib/task"
+	"github.com/art-media-platform/librespot-go/librespot/asset"
+	"github.com/art-media-platform/librespot-go/librespot/core/crypto"
+	"github.com/art-media-platform/librespot-go/librespot/mercury"
 )
 
 // Forward declartion to create a respot.Session (a Spotify session).
