@@ -2,8 +2,6 @@ module github.com/art-media-platform/librespot-go
 
 go 1.22
 
-// replace github.com/art-media-platform/amp.SDK => ../amp.SDK
-
 require (
 	github.com/art-media-platform/amp.SDK v0.8.7
 	github.com/golang/protobuf v1.5.4

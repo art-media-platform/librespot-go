@@ -8,9 +8,10 @@ import (
 	"github.com/art-media-platform/librespot-go/librespot/mercury"
 )
 
-// Forward declartion to create a respot.Session (a Spotify session).
+// Forward declartion to create a respot.Session.
 var StartNewSession func(ctx *SessionContext) (Session, error)
 
+// DefaultSessionContext creates a SessionContext with the given device label.
 func DefaultSessionContext(deviceLabel string) *SessionContext {
 	ctx := &SessionContext{
 		DeviceName: deviceLabel,
@@ -22,7 +23,7 @@ type SessionContext struct {
 	task.Context              // logging & shutdown
 	Login        SessionLogin // means for the session to login
 	Info         SessionInfo  // filled in during Session.Login()
-	Keys         crypto.Keys  // If left nil, will be auto-generated
+	Keys         crypto.Keys  // If nil, will be auto-generated
 	DeviceName   string       // Label of the device being used
 	DeviceUID    string       // if nil, auto-generated from DeviceName
 }

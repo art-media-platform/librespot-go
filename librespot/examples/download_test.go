@@ -9,9 +9,9 @@ import (
 
 	"github.com/art-media-platform/amp.SDK/stdlib/log"
 	"github.com/art-media-platform/amp.SDK/stdlib/task"
-	respot "github.com/art-media-platform/librespot-go/librespot/api-respot"
 	_ "github.com/art-media-platform/librespot-go/librespot/core" // bootstrapping
 	"github.com/art-media-platform/librespot-go/librespot/core/oauth"
+	"github.com/art-media-platform/librespot-go/librespot/respot"
 )
 
 func TestDownload(t *testing.T) {
@@ -51,19 +51,17 @@ func TestDownload(t *testing.T) {
 		host.Close()
 	}()
 
-	// Block on host shutdown completion
+	// Block on shutdown completion
 	<-host.Done()
-
 	log.Flush()
 }
 
 func assetTests(sess respot.Session) error {
 
 	funcSearch(sess, "CloudNone")
+
 	trackID := "spotify:track:4byboliQX2Dd8d5VIhROdt"
 	funcTrack(sess, trackID)
-
-	//fmt.Println("Loading track for play: ", trackID)
 
 	asset, err := sess.PinTrack(trackID, respot.PinOpts{
 		StartInternally: true,
@@ -129,7 +127,6 @@ func startSession(host task.Context) (respot.Session, error) {
 	}
 
 	return sess, nil
-
 }
 
 func funcTrack(sess respot.Session, trackURI string) {
@@ -146,7 +143,6 @@ func funcTrack(sess respot.Session, trackURI string) {
 
 func funcSearch(sess respot.Session, keyword string) {
 	resp, err := sess.Search(keyword, 12)
-
 	if err != nil {
 		fmt.Println("Failed to search:", err)
 		return
@@ -156,25 +152,21 @@ func funcSearch(sess respot.Session, keyword string) {
 
 	fmt.Println("Search results for ", keyword)
 	fmt.Println("=============================")
-
 	if res.Error != nil {
 		fmt.Println("Search result error:", res.Error)
 	}
 
 	fmt.Printf("Albums: %d (total %d)\n", len(res.Albums.Hits), res.Albums.Total)
-
 	for _, album := range res.Albums.Hits {
 		fmt.Printf(" => %s (%s)\n", album.Name, album.Uri)
 	}
 
 	fmt.Printf("\nArtists: %d (total %d)\n", len(res.Artists.Hits), res.Artists.Total)
-
 	for _, artist := range res.Artists.Hits {
 		fmt.Printf(" => %s (%s)\n", artist.Name, artist.Uri)
 	}
 
 	fmt.Printf("\nTracks: %d (total %d)\n", len(res.Tracks.Hits), res.Tracks.Total)
-
 	for _, track := range res.Tracks.Hits {
 		fmt.Printf(" => %s (%s)\n", track.Name, track.Uri)
 	}

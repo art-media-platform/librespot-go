@@ -10,9 +10,9 @@ import (
 	"github.com/golang/protobuf/proto"
 
 	"github.com/art-media-platform/librespot-go/Spotify"
-	respot "github.com/art-media-platform/librespot-go/librespot/api-respot"
-	"github.com/art-media-platform/librespot-go/librespot/api-respot/blob"
 	"github.com/art-media-platform/librespot-go/librespot/core/connection"
+	"github.com/art-media-platform/librespot-go/librespot/respot"
+	"github.com/art-media-platform/librespot-go/librespot/respot/blob"
 )
 
 var Version = "master"
