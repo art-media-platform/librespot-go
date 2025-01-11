@@ -3,9 +3,9 @@
 This is a production-grade adaptation of [librespot-golang](https://github.com/librespot-org/librespot-golang), which itself is an adaptation of [librespot for Rust](https://github.com/librespot-org/librespot) and [librespot-java](https://github.com/librespot-org/librespot-java).
 
 ### Objectives
-  - Provide core _librespot_ functionality in Go while departing from the constraints of its predecessors.
-  - Refactor predecessor into independent components that are Go friendly (e.g. `io.ReadSeekCloser`).
-  - Focus on core functionality: peripheral functionality should _consume_ core functionality rather than being _embedded_ within it.
+  - Provide _librespot_ functionality as a Go package (vs CLI) while also departing from the constraints of its predecessors.
+  - Refactor predecessors into independent components that are Go friendly (e.g. `io.ReadSeekCloser` for media assets).
+  - Focus on core functionality; peripheral functionality should _consume_ core functionality rather than be _embedded_ within it.
 
 ### Points of Interest
 

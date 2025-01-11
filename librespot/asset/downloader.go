@@ -26,15 +26,17 @@ type AssetFormat struct {
 	AudioFormats []Spotify.AudioFile_Format
 }
 
-// DefaultAudioFormats is the default audio format for assets if not specified via AssetFormat.
+// DefaultAudioFormats is the default format for audio assets if not specified via AssetFormat.
 var DefaultAudioFormats = []Spotify.AudioFile_Format{
 	Spotify.AudioFile_OGG_VORBIS_160,
 }
 
 type Downloader interface {
+
+	// HandleCmd processes a command received from the PacketStream.
 	HandleCmd(cmd byte, data []byte) error
 
-	// Blocks until the asset is ready to be accessed.
+	// Pin the given track, returning media.Asset for streaming or serving.
 	PinTrack(uri string, want *AssetFormat) (media.Asset, error)
 }
 
