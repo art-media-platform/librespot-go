@@ -39,7 +39,7 @@ func mainStart() error {
 	flag.Parse()
 
 	ctx := respot.DefaultSessionContext(*devicename)
-	ctx.Context, _ = task.Start(&task.Task{
+	ctx.Context, _ = task.Start(task.Task{
 		Info: task.Info{
 			Label: "main",
 		},
