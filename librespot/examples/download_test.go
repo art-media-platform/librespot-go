@@ -15,7 +15,6 @@ import (
 )
 
 func TestDownload(t *testing.T) {
-	log.UseStockFormatter(24, true)
 
 	host, _ := task.Start(task.Task{
 		Info: task.Info{
