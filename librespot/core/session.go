@@ -13,6 +13,7 @@ import (
 	"github.com/golang/protobuf/proto"
 
 	"github.com/art-media-platform/amp.SDK/stdlib/media"
+	"github.com/art-media-platform/amp.SDK/stdlib/tag"
 	"github.com/art-media-platform/librespot-go/Spotify"
 	"github.com/art-media-platform/librespot-go/librespot/asset"
 	"github.com/art-media-platform/librespot-go/librespot/core/connection"
@@ -35,7 +36,8 @@ func StartSession(ctx *respot.SessionContext) (respot.Session, error) {
 	}
 
 	if s.ctx.DeviceUID == "" {
-		s.ctx.DeviceUID = respot.GenerateDeviceUID(s.ctx.DeviceName)
+		name := tag.NameFrom(s.ctx.DeviceName)
+		s.ctx.DeviceUID = name.ID.Base32()
 	}
 
 	err := s.StartConnection()

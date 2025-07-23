@@ -1,8 +1,6 @@
 package respot
 
 import (
-	"crypto/sha1"
-	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -26,7 +24,6 @@ func APResolve() (string, error) {
 	}
 	defer r.Body.Close()
 
-
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		return "", err
@@ -42,10 +39,4 @@ func APResolve() (string, error) {
 	}
 
 	return endpoints.ApList[rand.Intn(len(endpoints.ApList))], nil
-}
-
-func GenerateDeviceUID(name string) string {
-	hash := sha1.Sum([]byte(name))
-	hash64 := base64.StdEncoding.EncodeToString(hash[:])
-	return hash64
 }
