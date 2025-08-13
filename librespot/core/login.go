@@ -48,6 +48,7 @@ func (sess *Session) Login() error {
 }
 
 func (s *Session) startSession(loginPacket []byte, username string) error {
+	_ = username
 	s.ctx.Info = respot.SessionInfo{}
 
 	err := s.stream.SendPacket(connection.PacketLogin, loginPacket)
@@ -93,17 +94,18 @@ func (s *Session) handleLogin() (*Spotify.APWelcome, error) {
 		return nil, fmt.Errorf("authentication failed: %v", err)
 	}
 
-	if cmd == connection.PacketAuthFailure {
+	switch cmd {
+	case connection.PacketAuthFailure:
 		errCode := Spotify.ErrorCode(data[1])
 		return nil, fmt.Errorf("authentication failed: %v", errCode)
-	} else if cmd == connection.PacketAPWelcome {
+	case connection.PacketAPWelcome:
 		welcome := &Spotify.APWelcome{}
 		err := proto.Unmarshal(data, welcome)
 		if err != nil {
 			return nil, fmt.Errorf("authentication failed: %v", err)
 		}
 		return welcome, nil
-	} else {
+	default:
 		return nil, fmt.Errorf("authentication failed: unexpected cmd %v", cmd)
 	}
 }
