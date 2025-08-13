@@ -3,10 +3,10 @@ module github.com/art-media-platform/librespot-go
 go 1.23.6
 
 require (
-	github.com/art-media-platform/amp.SDK v0.704.1-0.20250723160714-ebedb2268185
+	github.com/art-media-platform/amp.SDK v0.705.0
 	github.com/golang/protobuf v1.5.4
 	golang.org/x/crypto v0.40.0
-	google.golang.org/protobuf v1.36.6
+	google.golang.org/protobuf v1.36.7
 )
 
 require (
