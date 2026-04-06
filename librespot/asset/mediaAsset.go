@@ -7,7 +7,7 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/art-media-platform/amp.SDK/stdlib/media"
+	"github.com/art-media-platform/amp.SDK/stdlib/data"
 	"github.com/art-media-platform/amp.SDK/stdlib/task"
 	"github.com/art-media-platform/librespot-go/Spotify"
 	"github.com/art-media-platform/librespot-go/librespot/core/crypto"
@@ -418,7 +418,7 @@ func max(a, b int64) int64 {
 	return b
 }
 
-func (asset *mediaAsset) NewAssetReader() (media.AssetReader, error) {
+func (asset *mediaAsset) NewAssetReader() (data.AssetReader, error) {
 	reader := &assetReader{
 		asset:   asset,
 		readPos: 0,

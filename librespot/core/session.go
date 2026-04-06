@@ -12,7 +12,7 @@ import (
 
 	"github.com/golang/protobuf/proto"
 
-	"github.com/art-media-platform/amp.SDK/stdlib/media"
+	"github.com/art-media-platform/amp.SDK/stdlib/data"
 	"github.com/art-media-platform/amp.SDK/stdlib/tag"
 	"github.com/art-media-platform/librespot-go/Spotify"
 	"github.com/art-media-platform/librespot-go/librespot/asset"
@@ -78,7 +78,7 @@ func (s *Session) Context() *respot.SessionContext {
 	return s.ctx
 }
 
-func (s *Session) PinTrack(trackID string, opts respot.PinOpts) (media.Asset, error) {
+func (s *Session) PinTrack(trackID string, opts respot.PinOpts) (data.Asset, error) {
 	asset, err := s.downloader.PinTrack(trackID, &opts.Format)
 	if err != nil {
 		return nil, err

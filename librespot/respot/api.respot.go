@@ -1,7 +1,7 @@
 package respot
 
 import (
-	"github.com/art-media-platform/amp.SDK/stdlib/media"
+	"github.com/art-media-platform/amp.SDK/stdlib/data"
 	"github.com/art-media-platform/amp.SDK/stdlib/task"
 	"github.com/art-media-platform/librespot-go/librespot/asset"
 	"github.com/art-media-platform/librespot-go/librespot/core/crypto"
@@ -54,13 +54,13 @@ type Session interface {
 	Mercury() *mercury.Client
 
 	// Initiates downloading ("pinning") with the given spotify track ID or URI.
-	// The track data is accessible via media.Asset, supporting io.ReadSeekCloser and is essential for streaming or serving.
-	PinTrack(trackID string, opts PinOpts) (media.Asset, error)
+	// The track data is accessible via data.Asset, supporting io.ReadSeekCloser and is essential for streaming or serving.
+	PinTrack(trackID string, opts PinOpts) (data.Asset, error)
 }
 
 type PinOpts struct {
 
-	// If set, media.Asset.OnStart(Ctx().Context) will be called on the returned media.Asset.
+	// If set, data.Asset.OnStart(Ctx().Context) will be called on the returned data.Asset.
 	// This is for convenience but not desirable when the asset is in a time-to-live cache, for example.
 	StartInternally bool
 

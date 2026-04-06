@@ -1,21 +1,40 @@
-## librespot-go
+# librespot-go
 
-This is a production-grade adaptation of [librespot-golang](https://github.com/librespot-org/librespot-golang), which itself is an adaptation of [librespot for Rust](https://github.com/librespot-org/librespot) and [librespot-java](https://github.com/librespot-org/librespot-java).
+A Go package for [Spotify](https://www.spotify.com/) audio streaming, forked from [librespot-golang](https://github.com/librespot-org/librespot-golang) (itself derived from [librespot](https://github.com/librespot-org/librespot) for Rust and [librespot-java](https://github.com/librespot-org/librespot-java)).
 
-### Objectives
-  - Provide _librespot_ functionality as a Go package (vs CLI) while also departing from the constraints of its predecessors.
-  - Refactor predecessors into independent components that are Go friendly (e.g. `io.ReadSeekCloser` for media assets).
-  - Focus on core functionality; peripheral functionality should _consume_ core functionality rather than be _embedded_ within it.
+This fork is maintained as a production dependency of [art.media.platform](https://github.com/art-media-platform/amp.SDK) — specifically the `app.av.spotify` module in [amp.planet](https://github.com/art-media-platform/amp.planet).
 
-### Points of Interest
+## Goals
 
-  |          |             |
-  |----------|-------------|
-  | [examples](https://github.com/art-media-platform/librespot-go/tree/main/librespot/examples)                  | PRs welcome               |
-  | [api.respot.go](https://github.com/art-media-platform/librespot-go/blob/main/librespot/respot/api.respot.go) | package entry points      |
-  | [api.media.go](https://github.com/art-media-platform/amp.SDK/blob/main/stdlib/media/api.media.go)            | media data asset support  |
+- **Go-native API** — package consumption, not CLI.  Media assets implement `io.ReadSeekCloser` via the amp.SDK [`data.Asset`](https://github.com/art-media-platform/amp.SDK/blob/main/stdlib/data/asset.go) interface.
+- **Independent components** — core, mercury, metadata, asset, and spirc are separate packages with clean boundaries.
+- **Minimal surface** — core streaming functionality only.  Peripheral features should consume the core, not live inside it.
 
-### Contributing
+## Packages
 
-Contributions aligned with the above objectives are welcome. As this repository is in production, pull requests should demonstrate clear benefit. If you have ideas for improvements, please start a discussion.
+| Package | Purpose |
+|---------|---------|
+| [`respot/`](librespot/respot/) | Top-level API — session management, authentication, player |
+| [`core/`](librespot/core/) | Spotify session, handshake, transport |
+| [`asset/`](librespot/asset/) | Audio asset fetching, chunked streaming, decryption |
+| [`mercury/`](librespot/mercury/) | Mercury protocol (Spotify's internal pub/sub RPC) |
+| [`metadata/`](librespot/metadata/) | Track, album, artist, playlist metadata resolution |
+| [`spirc/`](librespot/spirc/) | Spotify Connect remote control protocol |
+| [`discovery/`](librespot/discovery/) | mDNS/SSDP device discovery |
+| [`Spotify/`](Spotify/) | Generated protobuf types (protoc-gen-go v1) |
 
+## Quick Start
+
+```go
+import "github.com/art-media-platform/librespot-go/librespot/respot"
+```
+
+See [`librespot/examples/`](librespot/examples/) for usage patterns.
+
+## Note on Protobufs
+
+The `Spotify/` directory contains protobuf types generated with `protoc-gen-go` v1 (`github.com/golang/protobuf`).  Code that marshals/unmarshals these types must use the v1 proto package, not `google.golang.org/protobuf/proto`.
+
+## License
+
+[MIT](LICENSE) — original copyright Paul Lietar, badfortrains, Guillaume Lesniak.

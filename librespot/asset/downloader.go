@@ -10,12 +10,12 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/art-media-platform/amp.SDK/stdlib/errors"
-	"github.com/art-media-platform/amp.SDK/stdlib/media"
+	"github.com/art-media-platform/amp.SDK/stdlib/data"
 	"github.com/art-media-platform/amp.SDK/stdlib/task"
 	"github.com/art-media-platform/librespot-go/Spotify"
 	"github.com/art-media-platform/librespot-go/librespot/core/connection"
 	"github.com/art-media-platform/librespot-go/librespot/mercury"
+	"github.com/pkg/errors"
 )
 
 // Expresses preferences for the asset data in order of preference.
@@ -36,8 +36,8 @@ type Downloader interface {
 	// HandleCmd processes a command received from the PacketStream.
 	HandleCmd(cmd byte, data []byte) error
 
-	// Pin the given track, returning media.Asset for streaming or serving.
-	PinTrack(uri string, want *AssetFormat) (media.Asset, error)
+	// Pin the given track, returning data.Asset for streaming or serving.
+	PinTrack(uri string, want *AssetFormat) (data.Asset, error)
 }
 
 type downloader struct {
@@ -76,7 +76,7 @@ func NewDownloader(conn connection.PacketStream, client *mercury.Client) Downloa
 	return dl
 }
 
-func (dl *downloader) PinTrack(assetURI string, want *AssetFormat) (media.Asset, error) {
+func (dl *downloader) PinTrack(assetURI string, want *AssetFormat) (data.Asset, error) {
 	// Get the track metadata: it holds information about which files and encodings are available
 	assetID, track, err := dl.mercury.GetTrack(assetURI)
 	if err != nil {
