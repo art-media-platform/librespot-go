@@ -7,7 +7,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/art-media-platform/amp.SDK/stdlib/log"
+	"github.com/art-media-platform/amp.SDK/stdlib/alog"
 	"github.com/art-media-platform/amp.SDK/stdlib/task"
 	_ "github.com/art-media-platform/librespot-go/librespot/core" // bootstrapping
 	"github.com/art-media-platform/librespot-go/librespot/core/oauth"
@@ -35,7 +35,7 @@ func TestDownload(t *testing.T) {
 		t.Fatalf("assetTests error: %v", err)
 	}
 
-	gracefulStop, immediateStop := log.AwaitInterrupt()
+	gracefulStop, immediateStop := alog.AwaitInterrupt()
 
 	go func() {
 		<-gracefulStop
@@ -52,7 +52,6 @@ func TestDownload(t *testing.T) {
 
 	// Block on shutdown completion
 	<-host.Done()
-	log.Flush()
 }
 
 func assetTests(sess respot.Session) error {
